@@ -10,7 +10,7 @@ userRouter.put("/admin/edit/email",validateTokenBearer, adminAuthorize, changeEm
 
 
 userRouter.post("/login", loginUser);
-userRouter.post("/logout", validateTokenBearer, logOutUser);
+userRouter.get("/logout", validateTokenBearer, logOutUser);
 userRouter.put("/edit/username",validateTokenBearer, changeUserName);
 userRouter.put("/edit/avatar",validateTokenBearer, changeAvatar);
 // userRouter.put("/edit/password",validateTokenBearer, changePassword);

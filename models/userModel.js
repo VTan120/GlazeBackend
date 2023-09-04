@@ -3,6 +3,7 @@ const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
     {
+        employeeId: mongoose.Schema.Types.UUID,
         userName:{
             type:String,
             required:[true,"User Id is a mandatory field"],

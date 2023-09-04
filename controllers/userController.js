@@ -239,10 +239,9 @@ const sendJwtCookie = async (user, status, res) => {
 
     const token = await jwt.sign({
         user:{
-            uid:user.userName,
+            uid:user.id,
             email:user.email,
-            role:user.role,
-            avatar:user.avatar}
+            role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1d"});
 
     const options = {
@@ -252,9 +251,8 @@ const sendJwtCookie = async (user, status, res) => {
 
     res.status(status).cookie("token", token, options).json({
         token:token, userCred:{
-        uid:user.userName,
+        uid:user._id,
         email:user.email,
-        role:user.role,
-        avatar:user.avatar}
+        role:user.role,}
     }); 
 }
