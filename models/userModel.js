@@ -3,12 +3,13 @@ const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
     {
-        employeeId: mongoose.Schema.Types.UUID,
-        userName:{
+        employeeId: {
+            type:Number,
+            unique:[true,"employeeId Is Already Used"],
+        },
+        employeeName:{
             type:String,
             required:[true,"User Id is a mandatory field"],
-            maxLength:[20,"User Id cannot Be More Than 20 Characters"],
-            minLength:[4,"User Id cannot Be Less Than 4 Characters"]
         },
         email:{
             type:String,
@@ -28,18 +29,62 @@ const userSchema = new mongoose.Schema(
                 type:String,
             }
         },
+        aadharCard:{
+            type:String,
+            required:[true,"Adhar Numver Is A Required Fiels"],
+            unique:[true,"Adhar Number Is Already Used"],
+            maxLength:[12,"User Id cannot Be More Than 20 Characters"],
+            minLength:[12,"User Id cannot Be Less Than 4 Characters"]
+        },
+
+        phoneNumber:{
+            type:String,
+            required:[true,"Phone Number Is A Required Fiels"],
+            unique:[true,"Phone Number Is Already Used"],
+        },
+
         role:{
             type:String,
             default:"user"
         },
-        resetPasswordToken:{
-            token:{
-                type:String,
+
+        birthDate: {
+            type:Date,
+        },
+
+        joiningDate: {
+            type:Date,
+        },
+
+        terminationDate:{
+            type:Date,
+        },
+
+        superviser: {
+            superviser_id:{
+                type: mongoose.Schema.ObjectId
             },
-            resetPasswordExpire:{
-                type:Date,
+            superviser_name:{
+                type: String
             }
-        }
+        },
+
+        store: {
+            store_id:{
+                type: Number
+            },
+            store_location:{
+                type: String
+            }
+        },
+        // resetPasswordToken:{
+        //     token:{
+        //         type:String,
+        //     },
+        //     resetPasswordExpire:{
+        //         type:Date,
+        //     }
+        // }
         
     }
 )

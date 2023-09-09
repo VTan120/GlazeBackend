@@ -38,14 +38,41 @@ const authorizeRoles = (...roles) => {
     };
   };
 
-  const adminAuthorize = (req, res, next) => {
+const adminAuthorize = (req, res, next) => {
 
-      if (req.user.role != "admin") {
+      if (!["admin","super_admin"].includes(req.user.role)) {
         res.status(402);
         throw new Error("User Not Authorised To Access Data");
       }
   
       next();
-    };
+  }
 
-module.exports = {validateTokenBearer, authorizeRoles, adminAuthorize};
+const authorization = asyncHandler( async (req, res, next) => {
+  console.log(req.headers.cookie);
+  const token = req.cookies.access_token;
+  if (!token) {
+    return res.sendStatus(403);
+  }
+  try {
+    await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if(err){
+          console.log(err);
+          res.status(400);
+          throw new Error("Authentication Failed");
+        }
+
+      
+      req.user = decoded.user;
+      console.log(req.user);
+      next();
+    });
+  } catch {
+    return res.sendStatus(403);
+  }
+}
+);
+
+
+
+module.exports = {validateTokenBearer, authorizeRoles, adminAuthorize, authorization};

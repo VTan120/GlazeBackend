@@ -4,51 +4,6 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-//@desc Creating New User
-//@route POST /api/users/register
-//@access Public
-const createNewUser = asyncHandler(async (req,res)=>{
-    const {userName, email, password} = req.body;
-    if (!userName || !email || !password){
-        res.status(400);
-        throw new Error("All fields not provided");
-    }
-
-    const existing = await User.findOne({email});
-    if (existing) {
-        res.status(400);
-        throw new Error("Email Already Used");
-    }
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    if(!hashPassword){
-        res.status(400).json({message:"Password Hashing Failed"});
-        throw new Error("Password Hashing Failed");
-    }
-
-    const newUser = await User.create({
-        userName,
-        email,
-        password:hashPassword,
-    });
-
-
-
-    if(!newUser) {
-        res.status(401).json({message:"Registration Failed"});
-        throw new Error("Registration failed");
-    }
-
-    res.status(201).json({
-        uid:newUser.userName,
-        email:newUser.email,
-        role:newUser.role,
-        avatar:newUser.avatar})
-    // sendJwtCookie(newUser, 201, res)
-    
-});
-
 //@desc Login User
 //@route GET /api/users/
 //@access Public
@@ -62,6 +17,10 @@ const loginUser = asyncHandler(async (req,res)=>{
     }
 
     const user = await User.findOne({email});
+
+    if(!user){
+        user = await User.findOne({employeeId:email});
+    }
 
     if(!user){
         console.log("No User");
@@ -86,8 +45,32 @@ const loginUser = asyncHandler(async (req,res)=>{
 //@desc LogOutUser
 //@route GET /api/users/logout
 //@access Public
+const refreshAccessToken = asyncHandler(async (req,res)=>{
+    const token = req.cookies.refresh_token;
+  if (!token) {
+    return res.sendStatus(403);
+  }
+  try {
+    await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if(err){
+          console.log(err);
+          res.status(400);
+          throw new Error("Authentication Failed");
+        }
+
+      sendNewAccessToken(req, res, next, decoded)
+    });
+  } catch {
+    return res.sendStatus(403);
+  }
+    res.status(201).json({message:"Logged Out"});
+});
+
+//@desc LogOutUser
+//@route GET /api/users/logout
+//@access Public
 const logOutUser = asyncHandler(async (req,res)=>{
-    res.cookie("token", null, {
+    res.cookie("refresh_token", null, {
         expire:new Date(Date.now()),
         httpOnly:true
     });
@@ -95,12 +78,10 @@ const logOutUser = asyncHandler(async (req,res)=>{
 });
 
 //@desc Get User Details
-//@route GET /api/users/inf0
+//@route GET /api/users/userinf0
 //@access Private
 const getUserDetails = asyncHandler(async (req,res) => {
     const user = await User.findOne({email:req.user["email"]});
-
-    user.password = "";
 
     if(!user){
         res.status(404);
@@ -201,35 +182,7 @@ const changeUserName = asyncHandler(async (req, res) => {
     res.status(200).json({userName:user.userName});
 });
 
-
-//@desc Update Email
-//@route PUT /api/users/edit/email
-//@access Private
-const changeEmail = asyncHandler(async (req, res) => {
-    const {oldEmail, newEmail} = req.body;
-
-    const user = await User.findOne({email:oldEmail});
-
-    if(!user){
-        res.status(400);
-        throw new Error("User Not Registered");
-    }
-
-    const otherUser = await User.findOne({newEmail});
-
-    if(otherUser){
-        res.status(400)
-        throw new Error("Email Already Used")
-    }
-
-    user.email = newEmail;
-
-    await user.save();
-
-    res.status(200).json({email:newEmail});
-});
-
-module.exports = {createNewUser, loginUser ,logOutUser, getUserDetails, changeEmail, changePassword, changeUserName, changeAvatar}
+module.exports = { loginUser ,logOutUser, getUserDetails, changePassword, changeUserName, changeAvatar, refreshAccessToken}
 
 
 
@@ -237,7 +190,14 @@ module.exports = {createNewUser, loginUser ,logOutUser, getUserDetails, changeEm
 //Function to send token as cookie
 const sendJwtCookie = async (user, status, res) => {
 
-    const token = await jwt.sign({
+    const access_token = await jwt.sign({
+        user:{
+            uid:user.id,
+            email:user.email,
+            role:user.role}
+    },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
+
+    const refresh_token = await jwt.sign({
         user:{
             uid:user.id,
             email:user.email,
@@ -246,11 +206,29 @@ const sendJwtCookie = async (user, status, res) => {
 
     const options = {
         expire:new Date(Date.now() + process.env.COOKIE_EXPIRE *24*60*60*1000),
+        samesite: 'lax',
         httpOnly:true
     }
 
-    res.status(status).cookie("token", token, options).json({
-        token:token, userCred:{
+    res.status(status).cookie("refresh_token", refresh_token, options).json({
+        access_token:access_token, userCred:{
+        uid:user._id,
+        email:user.email,
+        role:user.role,}
+    }); 
+}
+
+const sendNewAccessToken = async (req, res, next, user) => {
+
+    const access_token = await jwt.sign({
+        user:{
+            uid:user.id,
+            email:user.email,
+            role:user.role}
+    },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
+
+    res.status(200).json({
+        access_token:access_token, userCred:{
         uid:user._id,
         email:user.email,
         role:user.role,}
