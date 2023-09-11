@@ -53,9 +53,6 @@ const createNewUser = asyncHandler(async (req,res) => {
 
         const userDetails = await User.findOne({ email });
 
-        // setTimeout(() => {
-        // }, 3000);
-
         const mailOptions = {
                 from: process.env.EMAIL_ID,
                 to: email,
@@ -78,20 +75,61 @@ const createNewUser = asyncHandler(async (req,res) => {
     }
 })
 
+
+//@desc Edit User
+//@route PUT /api/admin/edit/user
+//@access Private
+const editUserInfo = asyncHandler(async (req,res) => {
+    const { employeeId, employeeName, email, phoneNumber, aadharCard, birthDate, joiningDate, role} = req.body;
+
+
+    if(!employeeId || !employeeName || !email || !phoneNumber || !aadharCard || !birthDate || !joiningDate || !role){
+        return res.status(400).json({ message: 'All Fields Are Required' });
+    }
+
+    if(!["store_manager","chef","employee"].includes(role)){
+        res.status(400);
+        throw new Error("Invalid Role");
+    }
+
+
+    try {
+        const user = await User.findOne({ employeeId });
+        const updatedDocument = await User.findByIdAndUpdate(
+          user.id,
+          req.body,
+          { new: true } // Set to true to return the updated document
+        );
+    
+        if (!updatedDocument) {
+          return res.status(404).json({ message: 'Document not found' });
+        }
+    
+        res.json(updatedDocument);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server Error' });
+      }
+})
+
 //@desc Admin Delete User
 //@route PUT /api/admin/edit/password
 //@access Private
 const deleteUser = asyncHandler(async (req,res) => {
-    const {email} = req.body;
-    if(!email) {
+    const {employeeId} = req.body;
+    if(!employeeId) {
         res.status(400);
         throw new Error("All fields not provided");
     }
-    const user = await User.findOne({email});
+    const user = await User.findOne({employeeId});
 
     var password = crypto.randomBytes(10).toString('hex');
 
     user.password = password;
+
+    const currentTime = new Date();
+
+    user.terminationDate = currentTime;
 
     try {
         await user.save();
@@ -149,9 +187,9 @@ const adminChangePassword = asyncHandler(async (req, res) => {
 //@route PUT /api/admin/edit/email
 //@access Private
 const adminChangeEmail = asyncHandler(async (req, res) => {
-    const {oldEmail, newEmail} = req.body;
+    const {employeeId, newEmail} = req.body;
 
-    const user = await User.findOne({email:oldEmail});
+    const user = await User.findOne({employeeId});
 
     if(!user){
         res.status(400);
@@ -176,8 +214,8 @@ const adminChangeEmail = asyncHandler(async (req, res) => {
 //@route GET /api/users/userinf0
 //@access Private
 const adminGetUserDetails = asyncHandler(async (req,res) => {
-    const eid = req.params["id"]
-    const user = await User.findOne({employeeId:eid });
+    const employeeId = req.params["id"]
+    const user = await User.findOne({employeeId });
 
     if(!user){
         res.status(404);
@@ -200,4 +238,4 @@ const adminGetAllUsers = asyncHandler(async (req,res) => {
 
     res.status(200).json(users)
 });
-module.exports = { createNewUser, adminChangePassword, adminChangeEmail, adminGetAllUsers, adminGetUserDetails, deleteUser, }
+module.exports = { createNewUser, adminChangePassword, adminChangeEmail, adminGetAllUsers, adminGetUserDetails, deleteUser,editUserInfo }

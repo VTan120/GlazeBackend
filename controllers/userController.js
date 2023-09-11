@@ -107,13 +107,13 @@ const setSuperviser = asyncHandler(async (req,res) => {
 //@route PUT /api/admin/edit/user_store
 //@access Private
 const setStore = asyncHandler(async (req,res) => {
-    const {email, storeName} = req.body;
-    if(!email || !storeName) {
+    const {employeeId, storeName} = req.body;
+    if(!employeeId || !storeName) {
         res.status(400);
         throw new Error("All fields not provided");
     }
-    const user = await User.findOne({email});
-    const store = await Store.findOne({storeId});
+    const user = await User.findOne({employeeId});
+    const store = await Store.findOne({storeName});
     user.store = {
         storeName,
         storeLocation:store.location
@@ -244,6 +244,7 @@ const sendJwtCookie = async (user, status, res) => {
     const access_token = await jwt.sign({
         user:{
             uid:user._id,
+            employeeId:user.employeeId,
             email:user.email,
             role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
@@ -251,6 +252,7 @@ const sendJwtCookie = async (user, status, res) => {
     const refresh_token = await jwt.sign({
         user:{
             uid:user._id,
+            employeeId:user.employeeId,
             email:user.email,
             role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1d"});
