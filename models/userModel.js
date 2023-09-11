@@ -29,13 +29,6 @@ const userSchema = new mongoose.Schema(
                 type:String,
             }
         },
-        aadharCard:{
-            type:String,
-            required:[true,"Adhar Numver Is A Required Fiels"],
-            unique:[true,"Adhar Number Is Already Used"],
-            maxLength:[12,"User Id cannot Be More Than 20 Characters"],
-            minLength:[12,"User Id cannot Be Less Than 4 Characters"]
-        },
 
         phoneNumber:{
             type:String,

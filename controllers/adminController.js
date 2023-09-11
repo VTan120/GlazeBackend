@@ -8,14 +8,14 @@ const sendEmail = require("../config/mailing");
 //@route POST /api/admin/register
 //@access Private
 const createNewUser = asyncHandler(async (req,res) => {
-    const { employeeName, email, password, phoneNumber, aadharCard, birthDate, joiningDate, role} = req.body;
+    const { employeeName, email, password, phoneNumber, birthDate, joiningDate, role} = req.body;
 
 
-    if(!employeeName || !email || !password || !phoneNumber || !aadharCard || !birthDate || !joiningDate || !role){
+    if(!employeeName || !email || !password || !phoneNumber || !birthDate || !joiningDate || !role){
         return res.status(400).json({ message: 'All Fields Are Required' });
     }
     // Check if the username or email already exists
-    const existingUser = await User.findOne({ $or: [{ phoneNumber }, { email }, {aadharCard}] });
+    const existingUser = await User.findOne({ $or: [{ phoneNumber }, { email }] });
 
     if (existingUser) {
       res.status(400);
@@ -42,15 +42,15 @@ const createNewUser = asyncHandler(async (req,res) => {
       password: hashedPassword,
       role,
       phoneNumber,
-      aadharCard,
       birthDate: new Date(birthDate), // Convert birthDate to a Date object
       joiningDate: new Date(joiningDate), 
     });
 
     // Save the new user to the database
     try {
+        console.log("Saving new user");
         await newUser.save();
-
+        console.log("Saved and Getting the user");
         const userDetails = await User.findOne({ email });
 
         const mailOptions = {
@@ -66,6 +66,7 @@ const createNewUser = asyncHandler(async (req,res) => {
             subject: "Welcome TO Gaze",
             html: `${employeeName} was added to the Glaze team as a ${role},his employee id is ${userDetails.employeeId} and login password is ${password}.`
     };
+    console.log("Prepared Email");
 
         sendEmail(mailOptions);
         sendEmail(mailOptions2);
@@ -80,10 +81,10 @@ const createNewUser = asyncHandler(async (req,res) => {
 //@route PUT /api/admin/edit/user
 //@access Private
 const editUserInfo = asyncHandler(async (req,res) => {
-    const { employeeId, employeeName, email, phoneNumber, aadharCard, birthDate, joiningDate, role} = req.body;
+    const { employeeId, employeeName, email, phoneNumber, birthDate, joiningDate, role} = req.body;
 
 
-    if(!employeeId || !employeeName || !email || !phoneNumber || !aadharCard || !birthDate || !joiningDate || !role){
+    if(!employeeId || !employeeName || !email || !phoneNumber || !birthDate || !joiningDate || !role){
         return res.status(400).json({ message: 'All Fields Are Required' });
     }
 
@@ -95,6 +96,23 @@ const editUserInfo = asyncHandler(async (req,res) => {
 
     try {
         const user = await User.findOne({ employeeId });
+
+        if(user.email !== email) {
+            const user2 = await User.findOne({email});
+            if(user2){
+                res.status(400);
+                throw new Error("Email Already Used");
+            }
+        }
+
+        if(user.phoneNumber !== phoneNumber) {
+            const user2 = await User.findOne({phoneNumber});
+            if(user2){
+                res.status(400);
+                throw new Error("Phone Number Already Used");
+            }
+        }
+
         const updatedDocument = await User.findByIdAndUpdate(
           user.id,
           req.body,
@@ -102,13 +120,15 @@ const editUserInfo = asyncHandler(async (req,res) => {
         );
     
         if (!updatedDocument) {
-          return res.status(404).json({ message: 'Document not found' });
+            res.status(404);
+            throw new Error("User not found");
         }
     
         res.json(updatedDocument);
       } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500);
+        throw new Error("Server Error");
       }
 })
 
