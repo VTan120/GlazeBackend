@@ -8,6 +8,9 @@ adminRouter.post("/register", validateTokenBearer, adminAuthorize, createNewUser
 adminRouter.put("/edit/email",validateTokenBearer, adminAuthorize, adminChangeEmail);
 adminRouter.put("/edit/password",validateTokenBearer, adminAuthorize, adminChangePassword );
 
+adminRouter.put("/delete_user",validateTokenBearer, adminAuthorize, adminChangePassword );
+
+
 adminRouter.get("/get_all_users",validateTokenBearer, adminAuthorize,adminGetAllUsers)
 adminRouter.get("/user/:id",validateTokenBearer, adminAuthorize,adminGetUserDetails)
 

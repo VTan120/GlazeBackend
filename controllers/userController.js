@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Store = require("../models/storeModel")
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt");
@@ -76,6 +77,56 @@ const logOutUser = asyncHandler(async (req,res)=>{
     });
     res.status(201).json({message:"Logged Out"});
 });
+
+//@desc Change Superviser
+//@route PUT /api/admin/edit/superviser
+//@access Private
+const setSuperviser = asyncHandler(async (req,res) => {
+    const {email, superviserEmail} = req.body;
+    if(!email || !superviserEmail) {
+        res.status(400);
+        throw new Error("All fields not provided");
+    }
+    const user = await User.findOne({email});
+    const superviser = await User.findOne({email:superviserEmail});
+    user.superviser = {
+        superviserId:superviser._id,
+        superviser_name:superviser.employeeName
+    };
+
+    try {
+        await user.save();
+        res.status(200).json({message:"Superviser Updared"});
+    } catch (error) {
+        res.status(400);
+        throw new Error("Internal Server Error");
+    }   
+})
+
+//@desc Change Store
+//@route PUT /api/admin/edit/user_store
+//@access Private
+const setStore = asyncHandler(async (req,res) => {
+    const {email, storeName} = req.body;
+    if(!email || !storeName) {
+        res.status(400);
+        throw new Error("All fields not provided");
+    }
+    const user = await User.findOne({email});
+    const store = await Store.findOne({storeId});
+    user.store = {
+        storeName,
+        storeLocation:store.location
+    };
+
+    try {
+        await user.save();
+        res.status(200).json({message:"Superviser Updared"});
+    } catch (error) {
+        res.status(400);
+        throw new Error("Internal Server Error");
+    }   
+})
 
 //@desc Get User Details
 //@route GET /api/users/userinf0
@@ -182,7 +233,7 @@ const changeUserName = asyncHandler(async (req, res) => {
     res.status(200).json({userName:user.userName});
 });
 
-module.exports = { loginUser ,logOutUser, getUserDetails, changePassword, changeUserName, changeAvatar, refreshAccessToken}
+module.exports = { loginUser ,logOutUser, getUserDetails, changePassword, changeUserName, changeAvatar, refreshAccessToken,setStore, setSuperviser }
 
 
 
@@ -192,14 +243,14 @@ const sendJwtCookie = async (user, status, res) => {
 
     const access_token = await jwt.sign({
         user:{
-            uid:user.id,
+            uid:user._id,
             email:user.email,
             role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
 
     const refresh_token = await jwt.sign({
         user:{
-            uid:user.id,
+            uid:user._id,
             email:user.email,
             role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1d"});

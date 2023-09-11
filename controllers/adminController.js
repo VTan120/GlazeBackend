@@ -1,17 +1,17 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
-const mongoose = require("mongoose")
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+var crypto = require("crypto");
+const sendEmail = require("../config/mailing");
 
 //@desc Insert New Employee
 //@route POST /api/admin/register
 //@access Private
 const createNewUser = asyncHandler(async (req,res) => {
-    const { employeeName, email, password, phoneNumber, aadharCard, birthDate, joiningDate, role, store } = req.body;
+    const { employeeName, email, password, phoneNumber, aadharCard, birthDate, joiningDate, role} = req.body;
 
 
-    if(!employeeName || !email || !password || !phoneNumber || !aadharCard || !birthDate || !joiningDate || !role || !store){
+    if(!employeeName || !email || !password || !phoneNumber || !aadharCard || !birthDate || !joiningDate || !role){
         return res.status(400).json({ message: 'All Fields Are Required' });
     }
     // Check if the username or email already exists
@@ -45,25 +45,71 @@ const createNewUser = asyncHandler(async (req,res) => {
       aadharCard,
       birthDate: new Date(birthDate), // Convert birthDate to a Date object
       joiningDate: new Date(joiningDate), 
-      store,
     });
 
     // Save the new user to the database
     try {
         await newUser.save();
+
+        const userDetails = await User.findOne({ email });
+
+        // setTimeout(() => {
+        // }, 3000);
+
+        const mailOptions = {
+                from: process.env.EMAIL_ID,
+                to: email,
+                subject: "Welcome TO Gaze",
+                html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role},your employee id is ${userDetails.employeeId} and login password is ${password}.`
+        };
+
+        const mailOptions2 = {
+            from: process.env.EMAIL_ID,
+            to: process.env.EMAIL_ID,
+            subject: "Welcome TO Gaze",
+            html: `${employeeName} was added to the Glaze team as a ${role},his employee id is ${userDetails.employeeId} and login password is ${password}.`
+    };
+
+        sendEmail(mailOptions);
+        sendEmail(mailOptions2);
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
         
     }
 })
 
+//@desc Admin Delete User
+//@route PUT /api/admin/edit/password
+//@access Private
+const deleteUser = asyncHandler(async (req,res) => {
+    const {email} = req.body;
+    if(!email) {
+        res.status(400);
+        throw new Error("All fields not provided");
+    }
+    const user = await User.findOne({email});
+
+    var password = crypto.randomBytes(10).toString('hex');
+
+    user.password = password;
+
+    try {
+        await user.save();
+        res.status(200).json({message:"Password Changed"});
+    } catch (error) {
+        res.status(400);
+        throw new Error("Internal Server Error");
+    }
+    
+})
+
 //@desc Admin Update Password
 //@route PUT /api/admin/edit/password
 //@access Private
 const adminChangePassword = asyncHandler(async (req, res) => {
-    const {userId, password, newPassword, confirmPassword} = req.body;
+    const {employeeId, newPassword, confirmPassword} = req.body;
 
-    if (!userId || !password || !newPassword || !confirmPassword){
+    if (!employeeId || !newPassword || !confirmPassword){
         res.status(400);
         throw new Error("All fields not provided");
     }
@@ -73,16 +119,14 @@ const adminChangePassword = asyncHandler(async (req, res) => {
         throw new Error("Password And Confirmed Password must be same");
     }
 
-    const user = await User.findOne({userId:userId});
+    const user = await User.findOne({employeeId});
 
     if(!user){
         res.status(400);
         throw new Error("User Not Registered");
     }
 
-    const valid = await bcrypt.compare(password, user.password);
-
-    if (valid) {
+    try {
         const hashPassword = await bcrypt.hash(newPassword, 10);
 
         if(!hashPassword){
@@ -94,9 +138,9 @@ const adminChangePassword = asyncHandler(async (req, res) => {
         await user.save();
         res.status(200).json({message:"Password Changed"});
     }
-    else{
+    catch(error){
         res.status(400);
-        throw new Error("Wrong Password");
+        throw new Error(error);
     }
 
 });
@@ -156,4 +200,4 @@ const adminGetAllUsers = asyncHandler(async (req,res) => {
 
     res.status(200).json(users)
 });
-module.exports = { createNewUser, adminChangePassword, adminChangeEmail, adminGetAllUsers, adminGetUserDetails}
+module.exports = { createNewUser, adminChangePassword, adminChangeEmail, adminGetAllUsers, adminGetUserDetails, deleteUser, }

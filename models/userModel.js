@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
             required:[true,"Email Id is a mandatory field"],
         },
         avatar:{ 
-            public_id:{
+            publicId:{
                 type:String,
             },
             url:{
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
         },
 
         superviser: {
-            superviser_id:{
+            superviserId:{
                 type: mongoose.Schema.ObjectId
             },
             superviser_name:{
@@ -70,10 +70,10 @@ const userSchema = new mongoose.Schema(
         },
 
         store: {
-            store_id:{
-                type: Number
+            storeId:{
+                type: mongoose.Schema.ObjectId
             },
-            store_location:{
+            storeLocation:{
                 type: String
             }
         },

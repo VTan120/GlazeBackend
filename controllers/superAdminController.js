@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt");
+const sendEmail = require("../config/mailing");
 
 //@desc Insert New Admin
 //@route POST /api/super_admin/register_admin
@@ -67,6 +68,25 @@ const createNewAdmin = asyncHandler(async (req,res) => {
     // Save the new user to the database
     try {
         await newUser.save();
+
+        await newUser.save();
+
+        const mailOptions = {
+                from: process.env.EMAIL_ID,
+                to: email,
+                subject: "Welcome TO Gaze",
+                html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role}, your login password is ${password}.`
+        };
+
+        const mailOptions2 = {
+            from: process.env.EMAIL_ID,
+            to: process.env.EMAIL_ID,
+            subject: "Welcome TO Gaze",
+            html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role}, your login password is ${password}.`
+    };
+
+        sendEmail(mailOptions);
+        sendEmail(mailOptions2);
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
         
