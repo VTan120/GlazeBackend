@@ -11,7 +11,7 @@ const validateTokenBearer = asyncHandler(async (req, res, next) => {
         await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if(err){
                 console.log(err);
-                res.status(400);
+                res.status(500);
                 throw new Error("Authentication Failed");
             }
             
@@ -30,7 +30,7 @@ const validateTokenBearer = asyncHandler(async (req, res, next) => {
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
       if (!roles.includes(req.user.role)) {
-        res.status(402);
+        res.status(401);
         throw new Error("User Not Authorised To Access Data");
       }
   
@@ -41,7 +41,7 @@ const authorizeRoles = (...roles) => {
 const adminAuthorize = (req, res, next) => {
 
       if (!["admin","super_admin"].includes(req.user.role)) {
-        res.status(402);
+        res.status(401);
         throw new Error("User Not Authorised To Access Data");
       }
   
@@ -58,7 +58,7 @@ const authorization = asyncHandler( async (req, res, next) => {
     await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
       if(err){
           console.log(err);
-          res.status(400);
+          res.status(500);
           throw new Error("Authentication Failed");
         }
 
@@ -68,7 +68,7 @@ const authorization = asyncHandler( async (req, res, next) => {
       next();
     });
   } catch {
-    return res.sendStatus(403);
+    return res.sendStatus(401);
   }
 }
 );

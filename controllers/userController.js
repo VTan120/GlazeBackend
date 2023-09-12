@@ -13,7 +13,7 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     if ( !email || !password){
         console.log("No email");
-        res.status(400);
+        res.status(402);
         throw new Error("All fields not provided");
     }
 
@@ -25,7 +25,7 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     if(!user){
         console.log("No User");
-        res.status(400);
+        res.status(404);
         throw new Error("User Not Registered");
     }
 

@@ -18,12 +18,12 @@ const createNewUser = asyncHandler(async (req,res) => {
     const existingUser = await User.findOne({ $or: [{ phoneNumber }, { email }] });
 
     if (existingUser) {
-      res.status(400);
+      res.status(402);
       throw new Error("User Already Exists");
     }
 
     if(!["store_manager","chef","employee"].includes(role)){
-        res.status(400);
+        res.status(402);
         throw new Error("Invalid Role");
     }
 
@@ -31,7 +31,7 @@ const createNewUser = asyncHandler(async (req,res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     if(!hashedPassword) {
-        res.status(400);
+        res.status(500);
         throw new Error("Failed Hashing");
     }
 
@@ -72,7 +72,8 @@ const createNewUser = asyncHandler(async (req,res) => {
         sendEmail(mailOptions2);
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
-        
+        res.status(500);
+        throw new Error("Unexpected Error");
     }
 })
 
@@ -85,11 +86,12 @@ const editUserInfo = asyncHandler(async (req,res) => {
 
 
     if(!employeeId || !employeeName || !email || !phoneNumber || !birthDate || !joiningDate || !role){
-        return res.status(400).json({ message: 'All Fields Are Required' });
+        res.status(402);
+        throw new Error("All Fields Are Required");
     }
 
     if(!["store_manager","chef","employee"].includes(role)){
-        res.status(400);
+        res.status(402);
         throw new Error("Invalid Role");
     }
 
@@ -100,7 +102,7 @@ const editUserInfo = asyncHandler(async (req,res) => {
         if(user.email !== email) {
             const user2 = await User.findOne({email});
             if(user2){
-                res.status(400);
+                res.status(402);
                 throw new Error("Email Already Used");
             }
         }
@@ -108,7 +110,7 @@ const editUserInfo = asyncHandler(async (req,res) => {
         if(user.phoneNumber !== phoneNumber) {
             const user2 = await User.findOne({phoneNumber});
             if(user2){
-                res.status(400);
+                res.status(402);
                 throw new Error("Phone Number Already Used");
             }
         }
@@ -138,7 +140,7 @@ const editUserInfo = asyncHandler(async (req,res) => {
 const deleteUser = asyncHandler(async (req,res) => {
     const {employeeId} = req.body;
     if(!employeeId) {
-        res.status(400);
+        res.status(402);
         throw new Error("All fields not provided");
     }
     const user = await User.findOne({employeeId});
@@ -155,7 +157,7 @@ const deleteUser = asyncHandler(async (req,res) => {
         await user.save();
         res.status(200).json({message:"Password Changed"});
     } catch (error) {
-        res.status(400);
+        res.status(500);
         throw new Error("Internal Server Error");
     }
     
@@ -168,19 +170,19 @@ const adminChangePassword = asyncHandler(async (req, res) => {
     const {employeeId, newPassword, confirmPassword} = req.body;
 
     if (!employeeId || !newPassword || !confirmPassword){
-        res.status(400);
+        res.status(402);
         throw new Error("All fields not provided");
     }
 
     if(newPassword !== confirmPassword){
-        res.status(400);
+        res.status(402);
         throw new Error("Password And Confirmed Password must be same");
     }
 
     const user = await User.findOne({employeeId});
 
     if(!user){
-        res.status(400);
+        res.status(404);
         throw new Error("User Not Registered");
     }
 
@@ -188,7 +190,8 @@ const adminChangePassword = asyncHandler(async (req, res) => {
         const hashPassword = await bcrypt.hash(newPassword, 10);
 
         if(!hashPassword){
-            res.status(400).json({message:"Password Hashing Failed"});
+            res.status(500);
+        throw new Error("Hashing Failed");
         }
 
         user.password = hashPassword;
@@ -197,8 +200,8 @@ const adminChangePassword = asyncHandler(async (req, res) => {
         res.status(200).json({message:"Password Changed"});
     }
     catch(error){
-        res.status(400);
-        throw new Error(error);
+        res.status(500);
+        throw new Error("Internal Server Error");
     }
 
 });
@@ -212,14 +215,14 @@ const adminChangeEmail = asyncHandler(async (req, res) => {
     const user = await User.findOne({employeeId});
 
     if(!user){
-        res.status(400);
-        throw new Error("User Not Registered");
+        res.status(402);
+        throw new Error("Nor Valid User");
     }
 
     const otherUser = await User.findOne({newEmail});
 
     if(otherUser){
-        res.status(400)
+        res.status(402)
         throw new Error("Email Already Used")
     }
 
@@ -245,11 +248,11 @@ const adminGetUserDetails = asyncHandler(async (req,res) => {
     res.status(200).json(user)
 });
 
-//@desc Get User Details
-//@route GET /api/users/userinf0
+//@desc Get All Users
+//@route GET /api/admin/get_all_users
 //@access Private
 const adminGetAllUsers = asyncHandler(async (req,res) => {
-    const users = await User.find({});
+    const users = await User.find({role: { $in: ['chef', 'store_manager', 'employee'] }});
 
     if(!users){
         res.status(404);

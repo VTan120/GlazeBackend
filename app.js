@@ -5,6 +5,7 @@ const dotenv = require("dotenv").config();
 var cors = require('cors');
 const adminRouter = require("./routes/adminRoutes");
 const superAdminRouter = require("./routes/superAdminRoutes");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -54,6 +55,8 @@ app.use(express.json());
 app.use("/api/users/", userRouter);
 app.use("/api/admin/", adminRouter);
 app.use("/api/super_admin/", superAdminRouter);
+
+app.use(errorHandler)
 
 const server = app.listen(process.env.ACCESS_PORT, () => {
     console.log(`Server Running On Port: ${process.env.ACCESS_PORT}`);

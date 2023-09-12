@@ -19,7 +19,7 @@ const createNewAdmin = asyncHandler(async (req,res) => {
     const super_admin = await User.findOne({email:req.user["email"]});
 
     if (!super_admin) {
-        res.status(400);
+        res.status(401);
         throw new Error("Unauthorised Request");
     }
 
@@ -27,7 +27,7 @@ const createNewAdmin = asyncHandler(async (req,res) => {
 
     if(!valid) {
         console.log("Wrong Password");
-        res.status(400);
+        res.status(401);
         throw new Error("Wrong Username Or Password");
     }
 
@@ -35,12 +35,12 @@ const createNewAdmin = asyncHandler(async (req,res) => {
     const existingUser = await User.findOne({ $or: [{ phoneNumber }, { email }, {aadharCard}] });
 
     if (existingUser) {
-      res.status(400);
+      res.status(402);
       throw new Error("User Already Exists");
     }
 
     if(!["store_manager","chef","employee"].includes(role)){
-        res.status(400);
+        res.status(402);
         throw new Error("Invalid Role");
     }
 
@@ -48,7 +48,7 @@ const createNewAdmin = asyncHandler(async (req,res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     if(!hashedPassword) {
-        res.status(400);
+        res.status(500);
         throw new Error("Failed Hashing");
     }
 
@@ -69,28 +69,43 @@ const createNewAdmin = asyncHandler(async (req,res) => {
     try {
         await newUser.save();
 
-        await newUser.save();
+        const userDetails = await User.findOne({ email });
 
         const mailOptions = {
-                from: process.env.EMAIL_ID,
-                to: email,
-                subject: "Welcome TO Gaze",
-                html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role}, your login password is ${password}.`
-        };
-
-        const mailOptions2 = {
             from: process.env.EMAIL_ID,
-            to: process.env.EMAIL_ID,
+            to: email,
             subject: "Welcome TO Gaze",
-            html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role}, your login password is ${password}.`
+            html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role},your employee id is ${userDetails.employeeId} and login password is ${password}.`
+    };
+
+    const mailOptions2 = {
+        from: process.env.EMAIL_ID,
+        to: process.env.EMAIL_ID,
+        subject: "Welcome TO Gaze",
+        html: `${employeeName} was added to the Glaze team as a ${role},his employee id is ${userDetails.employeeId} and login password is ${password}.`
     };
 
         sendEmail(mailOptions);
         sendEmail(mailOptions2);
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
-        
+        res.status(500);
+        throw new Error("Unexpected Error");
     }
 })
 
-module.exports = createNewAdmin
+//@desc Get All Users
+//@route GET /api/super_admin/get_all_users
+//@access Private
+const superAdminGetAllUsers = asyncHandler(async (req,res) => {
+    const users = await User.find({role: { $nin: ['super_admin'] }});
+
+    if(!users){
+        res.status(404);
+        throw new Error("Users Not Found");
+    }
+
+    res.status(200).json(users)
+});
+
+module.exports = {createNewAdmin, superAdminGetAllUsers}
