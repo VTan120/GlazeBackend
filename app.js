@@ -25,15 +25,15 @@ connectionDB();
 //     next();
 //   })
 
-app.options("/*", function(req, res, next){
-  // res.header('Access-Control-Allow-Origin', "http://localhost:3000");
-    res.header('Access-Control-Allow-Origin', "http://127.0.0.1:3000");
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header("Content-Type","application/json");
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Access-Control-Allow-Credentials');
-    res.sendStatus(200);
-  });
+// app.options("/*", function(req, res, next){
+//   // res.header('Access-Control-Allow-Origin', "http://localhost:3000");
+//     res.header('Access-Control-Allow-Origin', "*");
+//     // res.header('Access-Control-Allow-Credentials', 'true');
+//     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+//     res.header("Content-Type","application/json");
+//     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Access-Control-Allow-Credentials');
+//     res.sendStatus(200);
+//   });
 
 // app.use(cors(
 //     {
@@ -43,8 +43,8 @@ app.options("/*", function(req, res, next){
 // ));
 
 const corsConfig = {
-    origin: ['http://localhost:3000', 'https://www.google.com/', "http://127.0.0.1:3000","http://127.0.0.1:5001"],
-    credentials: true,
+    origin: ['http://localhost:3000', 'https://www.google.com/', "http://127.0.0.1:3000","http://127.0.0.2:3000", "*"],
+    // credentials: true,
     optionsSuccessStatus: 200
   };
   
