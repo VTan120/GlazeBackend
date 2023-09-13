@@ -181,9 +181,20 @@ const adminChangePassword = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({employeeId});
 
+
     if(!user){
         res.status(404);
         throw new Error("User Not Registered");
+    }
+
+    if(user.role === "admin" && req.user.role !== "super_admin"){
+        res.status(403);
+        throw new Error("User Is Unaurhorised");
+    }
+
+    if(user.role === "super_admin"){
+        res.status(403);
+        throw new Error("User Is Unaurhorised");
     }
 
     try {

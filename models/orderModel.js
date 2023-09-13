@@ -17,7 +17,13 @@ const orderSchema = new mongoose.Schema({
         type:String
     },
     employee:{
-        employeeId: mongoose.Schema.ObjectId,
+        employeeId: {type:Number},
+        employeeName:{
+            type:String
+        }
+    },
+    approval:{
+        employeeId: {type:Number},
         employeeName:{
             type:String
         }
