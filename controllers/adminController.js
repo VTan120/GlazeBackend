@@ -73,7 +73,7 @@ const createNewUser = asyncHandler(async (req,res) => {
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
         res.status(500);
-        throw new Error("Unexpected Error");
+        throw new Error(error);
     }
 })
 
@@ -263,7 +263,15 @@ const adminGetUserDetails = asyncHandler(async (req,res) => {
 //@route GET /api/admin/get_all_users
 //@access Private
 const adminGetAllUsers = asyncHandler(async (req,res) => {
-    const users = await User.find({role: { $in: ['chef', 'store_manager', 'employee'] }});
+    const role = req.user.role
+    var users;
+    if(role === "super_admin"){
+        users = await User.find({role: { $nin: ["super_admin"] }});
+    }
+    else{
+        users = await User.find({role: { $in: ['chef', 'store_manager', 'employee'] }});
+    }
+    
 
     if(!users){
         res.status(404);
