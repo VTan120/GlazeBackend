@@ -42,14 +42,14 @@ connectionDB();
 //     }
 // ));
 
-const corsConfig = {
-    origin: ['http://localhost:3000', 'https://www.google.com/', "http://127.0.0.1:3000","http://127.0.0.2:3000", "*"],
-    // credentials: true,
-    optionsSuccessStatus: 200
-  };
+// const corsConfig = {
+//     origin: ['http://localhost:3000', 'https://www.google.com/', "http://127.0.0.1:3000","http://127.0.0.2:3000", "*"],
+//     // credentials: true,
+//     optionsSuccessStatus: 200
+//   };
   
-  app.use(cors(corsConfig));
-  app.options('*', cors(corsConfig));
+  app.use(cors());
+  // app.options('*', cors(corsConfig));
 
 app.use(express.json());
 app.use("/api/users/", userRouter);
