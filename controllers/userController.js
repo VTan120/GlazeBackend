@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 //@desc Login User
-//@route GET /api/users/
+//@route POST /api/users/login
 //@access Public
 const loginUser = asyncHandler(async (req,res)=>{
     const {email, password} = req.body;
@@ -17,16 +17,12 @@ const loginUser = asyncHandler(async (req,res)=>{
         throw new Error("All fields not provided");
     }
 
-    const user = await User.findOne({email});
-
-    if(!user){
-        user = await User.findOne({employeeId:email});
-    }
+    var user = await User.findOne({email});
 
     if(!user){
         console.log("No User");
         res.status(404);
-        throw new Error("User Not Registered");
+        throw new Error("Wrong Username Or Password");
     }
 
     const valid = await bcrypt.compare(password, user.password);
@@ -43,8 +39,8 @@ const loginUser = asyncHandler(async (req,res)=>{
 
 });
 
-//@desc LogOutUser
-//@route GET /api/users/logout
+//@desc Refresh access Token
+//@route POST /api/users/refresh_access_token
 //@access Public
 const refreshAccessToken = asyncHandler(async (req,res)=>{
     const token = req.cookies.refresh_token;
@@ -189,7 +185,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 
 //@desc Update Avatar
-//@route PUT /api/users/edit/
+//@route PUT /api/users/edit/avatar
 //@access Private
 const changeAvatar = asyncHandler(async (req, res) => {
     console.log("Changing Avatar");

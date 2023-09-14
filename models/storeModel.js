@@ -6,16 +6,26 @@ const storeSchema = new mongoose.Schema({
         required:[true, "Please Select A StoreName"],
         unique:[true, "Store Name Should Be Unique"]
     },
+
     location:{
         type:String,
         required:[true, "Please Select A Location"]
     },
+
     storeManager:{
-        storeManagerId: mongoose.Schema.ObjectId,
+        employeeId: {type:Number},
         storeManagereName:{
             type:String
         }
     },
+
+    rawMaterialInventory:[
+//baches
+    ],
+
+    productsInventory:[
+
+    ]
 
 });
 

@@ -1,11 +1,13 @@
 const express = require("express");
 const connectionDB = require("./config/mongoDb");
 const { userRouter } = require("./routes/userRoutes");
+const { rawMaterialRouter } = require("./routes/rawMaterialRoutes");
 const dotenv = require("dotenv").config();
 var cors = require('cors');
 const adminRouter = require("./routes/adminRoutes");
 const superAdminRouter = require("./routes/superAdminRoutes");
 const errorHandler = require("./middleware/errorHandler");
+const { trackingRouter } = require("./routes/trackingRoutes");
 
 const app = express();
 
@@ -55,6 +57,8 @@ app.use(express.json());
 app.use("/api/users/", userRouter);
 app.use("/api/admin/", adminRouter);
 app.use("/api/super_admin/", superAdminRouter);
+app.use("/api/raw_materials/", rawMaterialRouter);
+app.use("/api/tracking/",trackingRouter);
 
 app.use(errorHandler)
 

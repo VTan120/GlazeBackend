@@ -50,26 +50,33 @@ const createNewUser = asyncHandler(async (req,res) => {
     try {
         console.log("Saving new user");
         await newUser.save();
-        console.log("Saved and Getting the user");
-        const userDetails = await User.findOne({ email });
+        setTimeout(async () => {
+            try {
+                const userDetails = await User.findOne({ email });
 
-        const mailOptions = {
+            const mailOptions = {
+                    from: process.env.EMAIL_ID,
+                    to: email,
+                    subject: "Welcome TO Gaze",
+                    html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role},your employee id is ${userDetails.employeeId} and login password is ${password}.`
+            };
+    
+            const mailOptions2 = {
                 from: process.env.EMAIL_ID,
-                to: email,
+                to: process.env.EMAIL_ID,
+                // to:"vedanttandel120@gmail.com",
                 subject: "Welcome TO Gaze",
-                html: `Hello ${employeeName}, \n\t Welcome to the Glaze team as a ${role},your employee id is ${userDetails.employeeId} and login password is ${password}.`
+                html: `${employeeName} was added to the Glaze team as a ${role},his employee id is ${userDetails.employeeId} and login password is ${password}.`
         };
-
-        const mailOptions2 = {
-            from: process.env.EMAIL_ID,
-            to: process.env.EMAIL_ID,
-            subject: "Welcome TO Gaze",
-            html: `${employeeName} was added to the Glaze team as a ${role},his employee id is ${userDetails.employeeId} and login password is ${password}.`
-    };
-    console.log("Prepared Email");
-
-        sendEmail(mailOptions);
-        sendEmail(mailOptions2);
+        console.log("Prepared Email");
+    
+            sendEmail(mailOptions);
+            sendEmail(mailOptions2);
+            } catch (error) {
+                console.log("Email Not Sent");
+            }
+          }, 10000);
+       
         res.status(200).json({newUser: newUser.employeeName})
     } catch (error) {
         res.status(500);
