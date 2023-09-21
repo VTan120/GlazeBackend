@@ -276,7 +276,7 @@ const adminGetAllUsers = asyncHandler(async (req,res) => {
         users = await User.find({role: { $nin: ["super_admin"] }});
     }
     else{
-        users = await User.find({role: { $in: ['chef', 'store_manager', 'employee'] }});
+        users = await User.find({role: { $nin: ['admin', 'super_admin'] }});
     }
     
 

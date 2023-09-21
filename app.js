@@ -8,6 +8,7 @@ const adminRouter = require("./routes/adminRoutes");
 const superAdminRouter = require("./routes/superAdminRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const { trackingRouter } = require("./routes/trackingRoutes");
+const { productRouter } = require("./routes/productRoutes");
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use("/api/users/", userRouter);
 app.use("/api/admin/", adminRouter);
 app.use("/api/super_admin/", superAdminRouter);
 app.use("/api/raw_materials/", rawMaterialRouter);
+app.use("/api/products/", productRouter);
 app.use("/api/tracking/",trackingRouter);
 
 app.use(errorHandler)

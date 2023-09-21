@@ -263,6 +263,7 @@ const sendJwtCookie = async (user, status, res) => {
         access_token:access_token, userCred:{
         uid:user._id,
         email:user.email,
+        employeeId:user.employeeId,
         role:user.role,}
     }); 
 }
@@ -273,6 +274,7 @@ const sendNewAccessToken = async (req, res, next, user) => {
         user:{
             uid:user.id,
             email:user.email,
+            employeeId:user.employeeId,
             role:user.role}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
 
@@ -280,6 +282,7 @@ const sendNewAccessToken = async (req, res, next, user) => {
         access_token:access_token, userCred:{
         uid:user._id,
         email:user.email,
+        employeeId:user.employeeId,
         role:user.role,}
     }); 
 }
