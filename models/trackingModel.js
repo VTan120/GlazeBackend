@@ -18,6 +18,10 @@ const trackingSchema = new mongoose.Schema({
         unique:[true,"trackingNumber already exist"]
     },
 
+    date:{
+        type:Date,
+    }
+
 });
 
 module.exports = mongoose.model("Tracking", trackingSchema);
