@@ -4,9 +4,9 @@ const { createNewAdmin, superAdminGetAllUsers } = require("../controllers/superA
 
 const superAdminRouter = express.Router();
 
-superAdminRouter.post("/register_admin", validateTokenBearer, authorizeRoles(["super_admin"]), createNewAdmin);
+superAdminRouter.post("/register_admin", validateTokenBearer, authorizeRoles("super_admin"), createNewAdmin);
 
-superAdminRouter.get("/get_all_users", validateTokenBearer, authorizeRoles(["super_admin"]), superAdminGetAllUsers);
+superAdminRouter.get("/get_all_users", validateTokenBearer, authorizeRoles("super_admin"), superAdminGetAllUsers);
 
 
 module.exports = superAdminRouter;

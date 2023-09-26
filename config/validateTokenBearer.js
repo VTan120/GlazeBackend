@@ -42,7 +42,6 @@ const authorizeRoles = (...roles) => {
         res.status(401);
         throw new Error("User Not Authorised To Access Data");
       }
-  
       next();
     };
   };
