@@ -8,10 +8,10 @@ const sendEmail = require("../config/mailing");
 //@route POST /api/admin/register
 //@access Private
 const createNewUser = asyncHandler(async (req,res) => {
-    const { employeeName, email, password, phoneNumber, birthDate, joiningDate, role} = req.body;
+    const { employeeName, email, password, phoneNumber, birthDate, joiningDate, role, storeId} = req.body;
 
 
-    if(!employeeName || !email || !password || !phoneNumber || !birthDate || !joiningDate || !role){
+    if(!employeeName || !email || !password || !phoneNumber || !birthDate || !joiningDate || !role || !storeId){
         return res.status(400).json({ message: 'All Fields Are Required' });
     }
     // Check if the username or email already exists
@@ -41,6 +41,7 @@ const createNewUser = asyncHandler(async (req,res) => {
       email,
       password: hashedPassword,
       role,
+      storeId,
       phoneNumber,
       birthDate: new Date(birthDate), // Convert birthDate to a Date object
       joiningDate: new Date(joiningDate), 
@@ -92,7 +93,7 @@ const editUserInfo = asyncHandler(async (req,res) => {
     const { employeeId, employeeName, email, phoneNumber, birthDate, joiningDate, role} = req.body;
 
 
-    if(!employeeId || !employeeName || !email || !phoneNumber || !birthDate || !joiningDate || !role){
+    if(!employeeId || !employeeName || !email || !phoneNumber || !birthDate || !joiningDate || !role || !storeId){
         res.status(402);
         throw new Error("All Fields Are Required");
     }

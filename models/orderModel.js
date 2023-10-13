@@ -1,64 +1,55 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-    product:[
-        {
-            name:{
-                type: String,
-                required:[true,"Please Select A Product"]
-            },
+  employeeId: {
+    type: Number,
+    required: true,
+  },
 
-            weight:{
-                type: Number,
-                // required:[true,"Please Enter The Required Weight In Kg"]
-            },
+  approvedBy: {
+    type:Number
+  },
 
-            costPerKg:{
-                type: Number,
-                // required:[true,"Please Enter The Cost Per Kelogram"]
-            },
-        }
-    ],
-    
-    status:{
-        type:String
+  storeId: {
+    type: String,
+    required: true,
+  },
+
+  products: [
+    {
+      name: {
+        type: String, 
+      },
+      quantity: {
+        type: Number,
+      },
+      materials: [{
+        name: String,
+        weight: Number,
+      }],
     },
+  ],
 
-    employee:{
-        employeeId: {type:Number},
-        employeeName:{
-            type:String
-        }
-    },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 
-    approval:{
-        employeeId: {type:Number},
-        employeeName:{
-            type:String
-        }
-    },
+  status: {
+    type: Number,
+    enum: [0, 1, 2, 3], // Example status values
+    default: 0,
+  },
 
-    invoice:{ //Invoice will be an image or pdf from supplyer
-        publicId:{
-            type:String,
-        },
-        url:{
-            type:String,
-        }
-    },
+  note: {
+    type: String, 
+  },
 
-    store: {
-        storeName:{
-            type: String
-        },
-        storeLocation:{
-            type: String
-        }
-    },
-},
+  invoiceImage: {
+    type: String, 
+  },
+});
 
-{ timestamps: true }
+const Order = mongoose.model('Order', orderSchema);
 
-);
-
-module.exports = mongoose.model("Order", orderSchema);
+module.exports = Order;

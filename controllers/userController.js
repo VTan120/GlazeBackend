@@ -242,7 +242,8 @@ const sendJwtCookie = async (user, status, res) => {
             uid:user._id,
             employeeId:user.employeeId,
             email:user.email,
-            role:user.role}
+            role:user.role,
+            storeId:user.storeId}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
 
     const refresh_token = await jwt.sign({
@@ -250,7 +251,8 @@ const sendJwtCookie = async (user, status, res) => {
             uid:user._id,
             employeeId:user.employeeId,
             email:user.email,
-            role:user.role}
+            role:user.role,
+            storeId:user.storeId}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1d"});
 
     const options = {
@@ -264,7 +266,8 @@ const sendJwtCookie = async (user, status, res) => {
         uid:user._id,
         email:user.email,
         employeeId:user.employeeId,
-        role:user.role,}
+        role:user.role,
+        storeId:user.storeId}
     }); 
 }
 
@@ -275,7 +278,8 @@ const sendNewAccessToken = async (req, res, next, user) => {
             uid:user.id,
             email:user.email,
             employeeId:user.employeeId,
-            role:user.role}
+            role:user.role,
+            storeId:user.storeId}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
 
     res.status(200).json({
@@ -283,6 +287,7 @@ const sendNewAccessToken = async (req, res, next, user) => {
         uid:user._id,
         email:user.email,
         employeeId:user.employeeId,
-        role:user.role,}
+        role:user.role,
+        storeId:user.storeId}
     }); 
 }

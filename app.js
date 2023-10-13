@@ -9,6 +9,8 @@ const superAdminRouter = require("./routes/superAdminRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const { trackingRouter } = require("./routes/trackingRoutes");
 const { productRouter } = require("./routes/productRoutes");
+const { storeRouter } = require("./routes/storeRoutes");
+const { orderRouter } = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -61,6 +63,8 @@ app.use("/api/super_admin/", superAdminRouter);
 app.use("/api/raw_materials/", rawMaterialRouter);
 app.use("/api/products/", productRouter);
 app.use("/api/tracking/",trackingRouter);
+app.use("/api/stores/",storeRouter);
+app.use("/api/orders/",orderRouter);
 
 app.use(errorHandler)
 

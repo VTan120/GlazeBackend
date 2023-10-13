@@ -62,22 +62,9 @@ const userSchema = new mongoose.Schema(
             }
         },
 
-        store: {
-            storeId:{
-                type: mongoose.Schema.ObjectId
-            },
-            storeLocation:{
+        storeId:{
                 type: String
-            }
-        },
-        // resetPasswordToken:{
-        //     token:{
-        //         type:String,
-        //     },
-        //     resetPasswordExpire:{
-        //         type:Date,
-        //     }
-        // }
+        }
         
     }
 )
