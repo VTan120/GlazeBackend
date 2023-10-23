@@ -11,6 +11,8 @@ const { trackingRouter } = require("./routes/trackingRoutes");
 const { productRouter } = require("./routes/productRoutes");
 const { storeRouter } = require("./routes/storeRoutes");
 const { orderRouter } = require("./routes/orderRoutes");
+const { budgetRouter } = require("./routes/budgetRoutes");
+const { salesRouter } = require("./routes/salesRoutes");
 
 const app = express();
 
@@ -65,6 +67,8 @@ app.use("/api/products/", productRouter);
 app.use("/api/tracking/",trackingRouter);
 app.use("/api/stores/",storeRouter);
 app.use("/api/orders/",orderRouter);
+app.use("/api/sales/",salesRouter);
+app.use("/api/budget/",budgetRouter);
 
 app.use(errorHandler)
 

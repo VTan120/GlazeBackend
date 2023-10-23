@@ -77,7 +77,7 @@ const editOrder  = asyncHandler(async (req,res) => {
         throw new Error("Order Doesnt Exist");
     }
 
-    if(order.status === 1){
+    if(order.status >= 1){
         res.status(402);
         throw new Error("Order Already Approved");
     }
@@ -86,6 +86,8 @@ const editOrder  = asyncHandler(async (req,res) => {
         res.status(402);
         throw new Error("Unauthorised Access");
     }
+
+    order.date = Date.now();
 
     order.products = [];
 
@@ -141,14 +143,14 @@ const approveOrder = asyncHandler(async (req,res) => {
         throw new Error("Order Doesnt Exist");
     }
 
-    if(order.status === 1){
+    if(order.status >= 1){
         res.status(402);
         throw new Error("Order Already Approved");
     }
 
     order.status = 1;
     order.approvedBy = req.user["employeeId"];
-    order.date = Date.now();
+    order.approvalDate = Date.now();
     try {
         await order.save(); 
         res.status(200).json({message:"Order Approved"});
@@ -173,12 +175,12 @@ const rejectOrder = asyncHandler(async (req,res) => {
         throw new Error("Order Doesnt Exist");
     }
 
-    if(order.status === 1){
+    if(order.status >= 1){
         res.status(402);
         throw new Error("Order Already Approved");
     }
 
-    order.status = 2;
+    order.status = -1;
     order.approvedBy = req.user["employeeId"];
     order.note = note;
     order.date = Date.now();
@@ -209,7 +211,7 @@ const deleteOrder = asyncHandler(async (req,res) => {
 
         if(!["admin","super_admin"].includes(req.user["role"]) && order.employeeId !== req.user["employeeId"]){
             res.status(402);
-            throw new Error("Unauthorised Access");
+            throw new Error("Not Your Order");
         }
 
         const status = await Order.deleteOne({_id});
@@ -221,6 +223,9 @@ const deleteOrder = asyncHandler(async (req,res) => {
             res.status(404).json({ message: 'Item not found.' });
         }
     } catch (error){
+        if(res.statusCode === 402){
+            throw new Error("Not Your Order");
+        }
         res.status(500);
         throw new Error("Internal Server Error");
     }

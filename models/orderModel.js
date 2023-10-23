@@ -15,6 +15,15 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
 
+  consumptionDate:{
+    month:{
+      type:String,
+    },
+    year:{
+      type:Number,
+    }
+  },
+
   products: [
     {
       name: {
@@ -35,9 +44,13 @@ const orderSchema = new mongoose.Schema({
     default: Date.now,
   },
 
+  approvalDate:{
+    type: Date,
+  },
+
   status: {
     type: Number,
-    enum: [0, 1, 2, 3], // Example status values
+    enum: [-1, 0, 1, 2, 3, 4], // Example status values
     default: 0,
   },
 

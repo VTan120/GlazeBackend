@@ -1,13 +1,8 @@
 const mongoose = require('mongoose');
 
-const productSchema = new mongoose.Schema({
-  name: String,      // Product name
-  quantity: Number   // Sale quantity for the month
-});
-
 const monthSchema = new mongoose.Schema({
   monthName: String, // January, February, etc.
-  products: [productSchema] // Array of products and their sale quantities
+  monthlyBudget: Number // Array of products and their sale quantities
 });
 
 const yearSchema = new mongoose.Schema({
@@ -22,9 +17,9 @@ const yearSchema = new mongoose.Schema({
     months: [monthSchema] // Array of months for the year
 });
 
-const Sales = mongoose.model('Sales', yearSchema);
+const Budget = mongoose.model('Budget', yearSchema);
 
-module.exports = Sales;
+module.exports = Budget;
 
 
 
