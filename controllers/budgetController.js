@@ -74,6 +74,10 @@ const addOrReplaceMonthlyBudget = asyncHandler(async (req, res) => {
   
       // Check if the product with the same name already exists in the month
       month.monthlyBudget = monthlyBudget;
+
+      month.employeeId = req.user["employeeId"];
+
+      month.lastUpdate = new Date()
   
       // Save the updated year document
       await yearDocument.save();

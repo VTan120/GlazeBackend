@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const monthSchema = new mongoose.Schema({
   monthName: String, // January, February, etc.
+  employeeId:Number,
+  lastUpdate:{
+    type: Date,
+    default: Date.now,
+  },
   monthlyBudget: Number // Array of products and their sale quantities
 });
 

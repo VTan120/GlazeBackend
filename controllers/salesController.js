@@ -155,6 +155,10 @@ const updateProductsInMonth = asyncHandler(async (req, res) => {
     // Find the month within the year document
     var month = yearDocument.months.find(month => month.monthName === monthName);
 
+    month.employeeId = req.user["employeeId"];
+
+    month.lastUpdate = new Date()
+
     month.products = [];
 
     for( i in products){

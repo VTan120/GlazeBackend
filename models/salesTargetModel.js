@@ -6,7 +6,12 @@ const productSchema = new mongoose.Schema({
 });
 
 const monthSchema = new mongoose.Schema({
-  monthName: String, // January, February, etc.
+  monthName: String,
+  employeeId:Number,
+  lastUpdate:{
+    type: Date,
+    default: Date.now,
+  },
   products: [productSchema] // Array of products and their sale quantities
 });
 

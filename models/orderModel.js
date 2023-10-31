@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
+  orderId:Number,
   employeeId: {
     type: Number,
     required: true,
@@ -39,7 +40,13 @@ const orderSchema = new mongoose.Schema({
     },
   ],
 
-  date: {
+  materialPrices:[{
+    materialName:String,
+    weight:Number,
+    price:Number
+  }],
+
+  requestDate: {
     type: Date,
     default: Date.now,
   },
@@ -59,6 +66,10 @@ const orderSchema = new mongoose.Schema({
   },
 
   invoiceImage: {
+    type: String, 
+  },
+
+  quoteImage: {
     type: String, 
   },
 });
