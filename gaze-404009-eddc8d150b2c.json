@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "gaze-404009",
+  "private_key_id": "eddc8d150b2c3d314b2d2f11527ab6817f93cbc6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDP55k/IMXJFi+G\neMkZTL9v4W0okcaqUBC2WnyMSRT4Nb5HFexPIBVk2k1KKRBrSmBlHXl4oCZlCcgS\nNAok2/46h6zCUaXSubTSTEF7Xhu7Qkn6DNYPhk03Gdx+03kyZIc02fPWs5zixYU8\n+WdSW1tySEWw2t4fZvwuTQLJNo031fmsXd4haqyML1fgZ8jSx3J9PRLI+CECSPit\nxHK4cil3J6C3+Y4JPBXDTYEemPyD8zxy0I3rVLuiUNx+bg4VQeRcs9VNcjq9jgwW\n4ZbIRNaH3QKnCe4rEKkwPO6TitBOQdCGjQJejAeJhPqCEznbx4S5J/540jD/6nLA\nZlQEzGOhAgMBAAECggEAGGIwTgAY/QbrbK5j34y/HcRm72LRgGNtjQWQep+OTwzL\n6T2//l5j7p/P1XUle3/jTa38SNJ3o6gBsr4vEQ2gLoXVFDahPSq8ngwwLeORWxAL\nlGvG+1Z5XeSxlfUAJOc3bafA+nBhuRMIwmhPNDs0vsg31uXZ4VL3HAhk3ZaBT4fv\nBnnkvrnMCCKQ6fxcB5QV4cyW8FjM0cIONeM7wKKhBp7Xa+XqcmrI8D4uul2HKRec\n5PJPr4/mklRhrib90z6tJ0uCmcKNRflxNHXqi2gKUtu1gOMC3XxpV9HmqUHuFi0j\nOQrcHqnH1j6MsHNRousuKhF2k6f0RkK3Be3spaeuVQKBgQD8JJ7U0qqEZdA5ToGO\nWiw1yXHBDbTIGnIBTbyE/FT+uEImM+k4j+hu48rk5slcvLVHWdlu1Y/szwE4oTcJ\nbaT+DSR+CmEj0boyGudPYJvvqfR9RLPIPfR3FBBpMSy7PGyVIak8XGi7qyCy+/jq\nH8y3DGe/Ha8NggrVusxUnqaAmwKBgQDTFb4yQ6n2BAY/IsJ37wFChgnX1Yn7xmHx\nD1xIPgncYTj2wWQQf1vHGeQvsHKMznzwcwosbDYWexuMpKwn2eYudp3gdkk9+4kB\n2so1EJnYcArQZCxkDvNm2QVqPuvl+LwsNjQJA3Cr44II638ly1b9xXRBXIpmdm9/\nEc3p1LC6cwKBgQDzTErOxXCwTKX9hhlRSQV76SOQyy70H0B+rYoJMIq7NwTtZA3Y\n/FOmHLv84AzRJW4uqS472msEcEKXaEh5GomocvoRfOZ677ag/oDQgUI2omI+Nfrc\nb5vjA0NKnZ6yFP4ZcN+iVPDilZ/51VU8ZO7eemPpcDUn7aGS1qqvxF6ZnQKBgFqp\n6yCByZ2eiuRRVL/Yy2y8T7wBvxuCUQ0OMO/ina+nnqT12bnwSgZRi54kJn9uLWHF\nt6fu7qhnRiT5kewn/mMUlakUhU73HBjM1a9HKx04upxZemubtFYHfvjsf7wuQvym\nZ2E7tghOVsroA5vDI+EqD04HpnZuBmPIzO3TafkbAoGBAKom0EpvhvFv5+ROerVP\nF9BAwlfkkdzcB8eG5rCZ7lsFw1eIBuVZjfgTyZRnS2bZId8b5y0CyokfjysZ3KLK\ntuE6LptfCXwatcxgqUQF+x/Shfm/F8Mxc/YFROK9H5ATtHynR1Y5d5A0x3LOK4l7\nppEv6L22uXthMFSZBkeJtXbr\n-----END PRIVATE KEY-----\n",
+  "client_email": "gaze-store-manager@gaze-404009.iam.gserviceaccount.com",
+  "client_id": "106079399295354307644",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gaze-store-manager%40gaze-404009.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

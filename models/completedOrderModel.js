@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 
-const orderSchema = new mongoose.Schema({
+const completedOrderSchema = new mongoose.Schema({
   orderId:Number,
-  
   employeeId: {
     type: Number,
     required: true,
@@ -62,8 +61,7 @@ const orderSchema = new mongoose.Schema({
 
   status: {
     type: Number,
-    enum: [-1, 0, 1, 2, 3, 4], // Example status values
-    default: 0,
+    default: 4,
   },
 
   note: {
@@ -79,6 +77,6 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-const Order = mongoose.model('Order', orderSchema);
+const CompleteOrder = mongoose.model('CompleteOrder', completedOrderSchema);
 
-module.exports = Order;
+module.exports = CompleteOrder;

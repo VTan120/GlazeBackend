@@ -1,4 +1,5 @@
 const express = require("express");
+const bodyParser = require('body-parser');
 const connectionDB = require("./config/mongoDb");
 const { userRouter } = require("./routes/userRoutes");
 const { rawMaterialRouter } = require("./routes/rawMaterialRoutes");

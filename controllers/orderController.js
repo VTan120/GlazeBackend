@@ -1,9 +1,14 @@
 const asyncHandler = require("express-async-handler");
+const { google } = require('googleapis');
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 const Budget = require("../models/budgetModel");
 const Sales = require("../models/salesTargetModel");
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const Store = require("../models/storeModel");
+const User = require("../models/userModel");
+const CompleteOrder = require("../models/completedOrderModel");
 
 const createOrder  = asyncHandler(async (req,res) => {
     const {products,  storeId, month, year} = req.body;
@@ -21,6 +26,7 @@ const createOrder  = asyncHandler(async (req,res) => {
 
     var order = {
         employeeId:req.user["employeeId"],
+        employeeName:req.user["employeeName"],
         storeId,
         consumptionDate:{
             month,
@@ -106,6 +112,8 @@ const editOrder  = asyncHandler(async (req,res) => {
 
     order.employeeId = req.user["employeeId"];
 
+    order.employeeName = req.user["employeeName"];
+
     order.requestDate = Date.now();
 
     order.consumptionDate = {
@@ -152,7 +160,6 @@ const editOrder  = asyncHandler(async (req,res) => {
         order.products.push(tempProduct);
     }
 
-    console.log(order);
     try {
         order.materialPrices = Object.values(materialPrices);
         order.status = 0;
@@ -195,6 +202,7 @@ const approveOrder = asyncHandler(async (req,res) => {
         order.status = -1;
     }
     order.approvedBy = req.user["employeeId"];
+    order.approvarName = req.user["employeeName"];
     order.approvalDate = Date.now();
     try {
         await order.save(); 
@@ -204,6 +212,65 @@ const approveOrder = asyncHandler(async (req,res) => {
         throw new Error("Internal Server Error");
     }
 })
+
+const completeOrder = asyncHandler(async (req,res) => {
+    const {id} = req.body;
+
+    if(!id){
+        res.status(402);
+        throw new Error("Id Not Provided");
+    } 
+
+    var order = await Order.findOne({_id:id});
+    if(!order){
+        res.status(404);
+        throw new Error("Order Doesnt Exist");
+    }
+
+    // if(order.status<3 || !order.invoiceImage){
+    //     res.status(402);
+    //     throw new Error("Order Not Ready To Be Complete");
+    // }
+
+    if(order.status<3){
+        res.status(402);
+        throw new Error("Order Not Ready To Be Complete");
+    }
+
+    const newCompleteOrder = new CompleteOrder({
+        orderId: order.orderId,
+        employeeId: order.employeeId,
+        approvedBy: order.approvedBy,
+        employeeName:order.employeeName,
+        approvarName:order.approvarName,
+        storeId: order.storeId,
+        consumptionDate: order.consumptionDate,
+        products: order.products,
+        materialPrices: order.materialPrices,
+        requestDate: order.requestDate,
+        approvalDate: order.approvalDate,
+        status: 4,
+    });
+
+    console.log(newCompleteOrder);
+
+    try {
+        await newCompleteOrder.save();
+
+        const status = await Order.deleteOne({_id:id});
+
+        if (status.deletedCount === 1) {
+            res.status(200).json({ message: 'Order Completed Successfully.' });
+        } 
+        else {
+            res.status(404).json({ message: 'Item not found.' });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500);
+        throw new Error("Internal Server Error");
+    }
+});
 
 const sendForBudgetApproval = asyncHandler(async (req,res) => {
     const {_id} = req.body;
@@ -231,6 +298,7 @@ const sendForBudgetApproval = asyncHandler(async (req,res) => {
 
     order.status = 2;
     order.employeeId = req.user["employeeId"];
+    order.employeeName = req.user["employeeName"];
     order.requestDate = Date.now();
     try {
         await order.save(); 
@@ -263,6 +331,7 @@ const rejectOrder = asyncHandler(async (req,res) => {
 
     order.status = -1;
     order.approvedBy = req.user["employeeId"];
+    order.approvarName = req.user["employeeName"];
     order.note = note;
     order.requestDate = Date.now();
     try {
@@ -285,7 +354,7 @@ const deleteOrder = asyncHandler(async (req,res) => {
     try {
         const order = await Order.findOne({_id});
 
-        if(order.status === 1){
+        if(order.status >= 1){
             res.status(402);
             throw new Error("Order Already Approved");
         }
@@ -339,6 +408,8 @@ const updateMaterialPrices  = asyncHandler(async (req,res) => {
 
     order.employeeId = req.user["employeeId"];
 
+    order.approvarName = req.user["employeeName"];
+
     order.requestDate = Date.now();
 
     order.materialPrices = materialPrices;
@@ -351,7 +422,83 @@ const updateMaterialPrices  = asyncHandler(async (req,res) => {
     }
 })
 
+const uploadInvoiceImage = asyncHandler(async (req, res) => {
 
+    console.log("inside upload");
+    if (req.file === "") {
+        return res.status(402).json({ error: 'No image provided.' });
+    }
+
+    const image = req.file;
+
+    console.log(image);
+
+    // cloudinary.config({
+    //     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    //     api_key: process.env.CLOUDINARY_API_KEY,
+    //     api_secret: process.env.CLOUDINARY_API_SECRET,
+    // });
+
+    console.log("ready to upload");
+    // try {
+    //     const b64 = Buffer.from(req.file.buffer).toString("base64");
+    //     let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    //     const uploadFile = await cloudinary.uploader.upload(dataURI, {
+    //         resource_type: "auto",
+    //     });
+    //     res.json(uploadFile);
+    // } catch (error) {
+    //     console.log(error);
+    //     res.status(500);
+    //     throw new Error("Internal Server Error");
+    // }
+
+    try {
+
+        console.log(image);
+
+          const metaData = {
+            name: image.originalname.substring(
+              0,
+              image.originalname.lastIndexOf(".")
+            ),
+            parents: [process.env.FOLDER_ID], 
+          };
+      
+          const media = {
+            mimeType: image.mimetype,
+            body: Buffer.from(image.buffer).toString("base64") // the image sent through multer will be uploaded to Drive
+          };
+
+          const auth = new google.auth.GoogleAuth({
+                keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH,
+                scopes: ['https://www.googleapis.com/auth/drive.file'],
+            });
+        
+            const drive = google.drive({
+                version: 'v3',
+                auth,
+            });
+
+            console.log("Ready to upload");
+
+      
+          // uploading the file
+          const response = await drive.files.create({
+            resource: metaData,
+            media: media,
+          });
+
+          console.log("uploaded");
+      
+          console.log("ID:", response.data);
+          res.status(200).json(response.data)
+    } catch (error) {
+        console.log(error);
+        throw new Error("Error In Process")
+    }
+
+})
 
 const getOrdersInStore = asyncHandler( async (req,res) => {
     const storeId = req.params["storeId"];
@@ -363,7 +510,7 @@ const getOrdersInStore = asyncHandler( async (req,res) => {
     try {
         var budgetYears = {};
         var salesYears = {};
-        const orders = await Order.find({storeId}).sort({status:1});
+        const orders = await Order.find({storeId, status:{$ne: 4}}).sort({status:1});
 
         var updatedOrders = [];
 
@@ -373,7 +520,7 @@ const getOrdersInStore = asyncHandler( async (req,res) => {
                     salesYears[orders[i].consumptionDate.year] = await Sales.findOne({year:orders[i].consumptionDate.year});
                 }
                 const salesTarget = salesYears[orders[i].consumptionDate.year] ? salesYears[orders[i].consumptionDate.year].months.find(obj => obj.monthName === orders[i].consumptionDate.month) : {products:false};
-                updatedOrders.push({...orders[i].toObject(),salesTarget:salesTarget.products})
+                updatedOrders.push({...orders[i].toObject(),salesTarget:salesTarget ? salesTarget.products : false })
             }
             else if(orders[i].status === 1){
                 if(!budgetYears[orders[i].consumptionDate.year]){
@@ -388,6 +535,37 @@ const getOrdersInStore = asyncHandler( async (req,res) => {
 
         }
         res.status(200).json(updatedOrders)
+    } catch (error) {
+        console.log(error);
+        res.status(500);
+        throw new Error("Internal Server Error");
+    }
+})
+
+const getCompletedOrdersInStore = asyncHandler( async (req,res) => {
+    const page = parseInt(req.query.page) || 1;  // Current page
+    const limit = parseInt(req.query.limit) || 10;
+    const storeId = req.query.storeId;
+    // const storeId = req.params["storeId"];
+
+    if(!storeId){
+        res.status(402);
+        throw new Error("Invalid Store");
+    }
+    try {
+        const totalOrders = await CompleteOrder.countDocuments();
+        const totalPages = Math.ceil(totalOrders / limit);
+        const orders = await CompleteOrder.find({storeId})
+        .sort({orderId:1})
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec();;
+
+        res.status(200).json({
+            orders,
+            currentPage: page,
+            totalPages,
+        })
     } catch (error) {
         console.log(error);
         res.status(500);
@@ -414,23 +592,29 @@ const getOrderBudgetDetails = asyncHandler(async (req,res) => {
         throw new Error("All Fields Not Provided");
     }
 
-    try {
-        const order = await Order.findOne({_id});
-        const budget = await Budget.findOne({year:order.consumptionDate.year});
+    let order = await Order.findOne({_id});
+    if(!order){
+        order = await CompleteOrder.findOne({_id});
         if(!order){
             res.status(404);
-            throw new Error("Cannot Find Order");
+            throw new Error("No Budget Set For The Year");
         }
-        if(!budget){
-            res.status(404);
-            throw new Error("Cannot Find Budget Year");
-        }
+    }
+
+    const budget = await Budget.findOne({year:order.consumptionDate.year});
+    if(!budget){
+        res.status(404);
+        throw new Error("Cannot Find Budget Year");
+    }
+
+    try {
         res.status(200).json({order,monthlyBudget:budget.months.find(obj => obj.monthName === order.consumptionDate.month)});
     } catch (error) {
+        console.log(error);
         res.status(500);
         throw new Error("Internal Server Error");
     }
 });
 
 
-module.exports = { getOrderBudgetDetails, createOrder , approveOrder , getOrdersInStore , getProducts , rejectOrder , deleteOrder , editOrder, updateMaterialPrices, sendForBudgetApproval}
+module.exports = { completeOrder, getOrderBudgetDetails, createOrder , approveOrder , getOrdersInStore , getProducts, getCompletedOrdersInStore , rejectOrder , deleteOrder , editOrder, updateMaterialPrices, sendForBudgetApproval, uploadInvoiceImage}

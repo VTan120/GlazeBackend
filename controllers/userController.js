@@ -241,6 +241,7 @@ const sendJwtCookie = async (user, status, res) => {
         user:{
             uid:user._id,
             employeeId:user.employeeId,
+            employeeName:user.employeeName,
             email:user.email,
             role:user.role,
             storeId:user.storeId}
@@ -250,6 +251,7 @@ const sendJwtCookie = async (user, status, res) => {
         user:{
             uid:user._id,
             employeeId:user.employeeId,
+            employeeName:user.employeeName,
             email:user.email,
             role:user.role,
             storeId:user.storeId}
@@ -266,6 +268,7 @@ const sendJwtCookie = async (user, status, res) => {
         uid:user._id,
         email:user.email,
         employeeId:user.employeeId,
+        employeeName:user.employeeName,
         role:user.role,
         storeId:user.storeId}
     }); 
@@ -278,6 +281,7 @@ const sendNewAccessToken = async (req, res, next, user) => {
             uid:user.id,
             email:user.email,
             employeeId:user.employeeId,
+            employeeName:user.employeeName,
             role:user.role,
             storeId:user.storeId}
     },process.env.ACCESS_TOKEN_SECRET,{expiresIn:"1h"});
@@ -287,6 +291,7 @@ const sendNewAccessToken = async (req, res, next, user) => {
         uid:user._id,
         email:user.email,
         employeeId:user.employeeId,
+        employeeName:user.employeeName,
         role:user.role,
         storeId:user.storeId}
     }); 
