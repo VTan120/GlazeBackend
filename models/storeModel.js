@@ -46,10 +46,6 @@ const storeSchema = new mongoose.Schema({
         }
     },
 
-    rawMaterialInventory:[
-//baches
-    ],
-
 });
 
 module.exports = mongoose.model("Store", storeSchema)

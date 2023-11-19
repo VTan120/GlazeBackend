@@ -72,6 +72,14 @@ const completedOrderSchema = new mongoose.Schema({
     type: String, 
   },
 
+  invoiceNumber:{
+    type: String, 
+  },
+
+  supplierName:{
+    type: String, 
+  },
+
   quoteImage: {
     type: String, 
   },

@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Store = require("../models/storeModel");
 const User = require("../models/userModel");
+const RawMaterialInventory = require("../models/rawMaterialInventoryModel");
 
 
 //@desc Add new raw material/ingredient to database
@@ -22,6 +23,10 @@ const createStore = asyncHandler( async (req,res) => {
             city: city.toLowerCase(),
         });
         newStore.save();
+        const newRawInventory = new RawMaterialInventory({
+            storeId : newStore.storeId,
+        });
+        newRawInventory.save();
         res.status(200).json(newStore);
     }
     catch(err) {

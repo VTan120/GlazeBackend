@@ -222,15 +222,11 @@ const completeOrder = asyncHandler(async (req,res) => {
     } 
 
     var order = await Order.findOne({_id:id});
+    
     if(!order){
         res.status(404);
         throw new Error("Order Doesnt Exist");
     }
-
-    // if(order.status<3 || !order.invoiceImage){
-    //     res.status(402);
-    //     throw new Error("Order Not Ready To Be Complete");
-    // }
 
     if(order.status<3){
         res.status(402);
@@ -249,12 +245,14 @@ const completeOrder = asyncHandler(async (req,res) => {
         materialPrices: order.materialPrices,
         requestDate: order.requestDate,
         approvalDate: order.approvalDate,
+        invoiceNumber:order.invoiceNumber,
+        supplierName:order.supplierName,
+        quoteImage:order.quoteImage,
         status: 4,
     });
 
-    console.log(newCompleteOrder);
-
     try {
+        console.log(newCompleteOrder);
         await newCompleteOrder.save();
 
         const status = await Order.deleteOne({_id:id});
@@ -382,9 +380,9 @@ const deleteOrder = asyncHandler(async (req,res) => {
 })
 
 const updateMaterialPrices  = asyncHandler(async (req,res) => {
-    const {materialPrices , _id } = req.body;
+    const {quoteNo, supplierName, materialPrices , _id } = req.body;
 
-    if(!materialPrices || !_id ) {
+    if(!quoteNo || !supplierName || !materialPrices || !_id ) {
         res.status(402);
         throw new Error("All Fields Not Provided");
     }
@@ -413,6 +411,12 @@ const updateMaterialPrices  = asyncHandler(async (req,res) => {
     order.requestDate = Date.now();
 
     order.materialPrices = materialPrices;
+
+    order.quoteImage = quoteNo;
+
+    order.supplierName = supplierName;
+
+    console.log(order);
     try {
         await order.save(); 
         res.status(200).json({message:"Order Edited Successfully"});
@@ -422,83 +426,123 @@ const updateMaterialPrices  = asyncHandler(async (req,res) => {
     }
 })
 
-const uploadInvoiceImage = asyncHandler(async (req, res) => {
 
-    console.log("inside upload");
-    if (req.file === "") {
-        return res.status(402).json({ error: 'No image provided.' });
+const uploadInvoiceImage = asyncHandler(async (req, res) => {
+    const {invoice , _id } = req.body;
+
+    if(!invoice || !_id ) {
+        res.status(402);
+        throw new Error("All Fields Not Provided");
     }
 
-    const image = req.file;
+    console.log(invoice,_id);
 
-    console.log(image);
+    var order = await Order.findOne({_id});
 
-    // cloudinary.config({
-    //     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    //     api_key: process.env.CLOUDINARY_API_KEY,
-    //     api_secret: process.env.CLOUDINARY_API_SECRET,
-    // });
+    if(!order){
+        res.status(404)
+        throw new Error("Order Doesnt Exist");
+    }
 
-    console.log("ready to upload");
-    // try {
-    //     const b64 = Buffer.from(req.file.buffer).toString("base64");
-    //     let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
-    //     const uploadFile = await cloudinary.uploader.upload(dataURI, {
-    //         resource_type: "auto",
-    //     });
-    //     res.json(uploadFile);
-    // } catch (error) {
-    //     console.log(error);
-    //     res.status(500);
-    //     throw new Error("Internal Server Error");
-    // }
+    if(order.status < 3){
+        res.status(402);
+        throw new Error("Order Cant Be Completed In This Stage");
+    }
+
+    if(!["admin","super_admin"].includes(req.user["role"]) && order.employeeId !== req.user["employeeId"]){
+        res.status(402);
+        throw new Error("Unauthorised Access");
+    }
+
+    order.invoiceNumber = parseInt(invoice);
 
     try {
-
-        console.log(image);
-
-          const metaData = {
-            name: image.originalname.substring(
-              0,
-              image.originalname.lastIndexOf(".")
-            ),
-            parents: [process.env.FOLDER_ID], 
-          };
-      
-          const media = {
-            mimeType: image.mimetype,
-            body: Buffer.from(image.buffer).toString("base64") // the image sent through multer will be uploaded to Drive
-          };
-
-          const auth = new google.auth.GoogleAuth({
-                keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH,
-                scopes: ['https://www.googleapis.com/auth/drive.file'],
-            });
-        
-            const drive = google.drive({
-                version: 'v3',
-                auth,
-            });
-
-            console.log("Ready to upload");
-
-      
-          // uploading the file
-          const response = await drive.files.create({
-            resource: metaData,
-            media: media,
-          });
-
-          console.log("uploaded");
-      
-          console.log("ID:", response.data);
-          res.status(200).json(response.data)
-    } catch (error) {
-        console.log(error);
-        throw new Error("Error In Process")
+        await order.save(); 
+        res.status(200).json({message:"Order Edited Successfully"});
+    } catch (error){
+        res.status(500);
+        throw new Error("Internal Server Error");
     }
+});
 
-})
+// const uploadInvoiceImage = asyncHandler(async (req, res) => {
+
+//     console.log("inside upload");
+//     if (req.file === "") {
+//         return res.status(402).json({ error: 'No image provided.' });
+//     }
+
+//     const image = req.file;
+
+//     console.log(image);
+
+//     // cloudinary.config({
+//     //     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//     //     api_key: process.env.CLOUDINARY_API_KEY,
+//     //     api_secret: process.env.CLOUDINARY_API_SECRET,
+//     // });
+
+//     console.log("ready to upload");
+//     // try {
+//     //     const b64 = Buffer.from(req.file.buffer).toString("base64");
+//     //     let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+//     //     const uploadFile = await cloudinary.uploader.upload(dataURI, {
+//     //         resource_type: "auto",
+//     //     });
+//     //     res.json(uploadFile);
+//     // } catch (error) {
+//     //     console.log(error);
+//     //     res.status(500);
+//     //     throw new Error("Internal Server Error");
+//     // }
+
+//     try {
+
+//         console.log(image);
+
+//           const metaData = {
+//             name: image.originalname.substring(
+//               0,
+//               image.originalname.lastIndexOf(".")
+//             ),
+//             parents: [process.env.FOLDER_ID], 
+//           };
+      
+//           const media = {
+//             mimeType: image.mimetype,
+//             body: Buffer.from(image.buffer).toString("base64") // the image sent through multer will be uploaded to Drive
+//           };
+
+//           const auth = new google.auth.GoogleAuth({
+//                 keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH,
+//                 scopes: ['https://www.googleapis.com/auth/drive.file'],
+//             });
+        
+//             const drive = google.drive({
+//                 version: 'v3',
+//                 auth,
+//             });
+
+//             console.log("Ready to upload");
+
+      
+//           // uploading the file
+//           const response = await drive.files.create({
+//             resource: metaData,
+//             media: media,
+//           });
+
+//           console.log("uploaded");
+      
+//           console.log("ID:", response.data);
+//           res.status(200).json(response.data)
+//     } catch (error) {
+//         console.log(error);
+//         throw new Error("Error In Process")
+//     }
+
+// })
+
 
 const getOrdersInStore = asyncHandler( async (req,res) => {
     const storeId = req.params["storeId"];
