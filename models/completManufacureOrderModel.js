@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 
 
-const manufacturingSchema = new mongoose.Schema({
+const CompletedManufacturingOrderSchema = new mongoose.Schema({
 
     storeId:{
         type:String,
@@ -14,18 +14,17 @@ const manufacturingSchema = new mongoose.Schema({
         required: true,
       },
 
-
-    approvedBy: {
+    approvedBy:{
         type:Number
       },
-
+      
     approvalDate:{
         type: Date,
-      },
+      },  
       
     employeeName:String,
 
-    approvarName:String,    
+    approvarName:String, 
 
     product:{
         type:String,
@@ -90,9 +89,9 @@ const manufacturingSchema = new mongoose.Schema({
 
     status:{
         type:Number,
-        default:0,
+        
     }
 
 },{timestamps:true})
 
-module.exports = mongoose.model("Manufactur",manufacturingSchema)
+module.exports = mongoose.model("CompletedManufacturOrder",CompletedManufacturingOrderSchema);

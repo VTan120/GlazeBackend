@@ -454,7 +454,7 @@ const uploadInvoiceImage = asyncHandler(async (req, res) => {
         throw new Error("Unauthorised Access");
     }
 
-    order.invoiceNumber = parseInt(invoice);
+    order.invoiceNumber = invoice;
 
     try {
         await order.save(); 
