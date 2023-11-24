@@ -16,6 +16,7 @@ const { budgetRouter } = require("./routes/budgetRoutes");
 const { salesRouter } = require("./routes/salesRoutes");
 const { packetRouter } = require("./routes/packetRoutes");
 const { manufactureRouter } = require("./routes/manufacturingRoutes");
+const { posRouter } = require("./routes/posRoutes");
 
 const app = express();
 
@@ -74,6 +75,7 @@ app.use("/api/sales/",salesRouter);
 app.use("/api/budget/",budgetRouter);
 app.use("/api/packets/",packetRouter);
 app.use("/api/manufacture/",manufactureRouter);
+app.use("/api/pos/",posRouter);
 
 app.use(errorHandler)
 
