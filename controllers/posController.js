@@ -74,40 +74,37 @@ const updateInventory = asyncHandler( async (req,res) => {
     const sheet = workbook.Sheets[sheetName];
     
     const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    var flag = 0;
-    var mismatchedProduct = {}
+    const store = await POSStore.findOne({storeId})
+
+    if(!store){
+        res.status(404);
+        throw new Error("Store Not Found");
+    }
+
+    const productMap = store.products.reduce((map, product) => {
+        map[product.productBarcode] = product;
+        return map;
+    }, {});
+
+    jsonData.slice(1).forEach(([barcode, name, productOffer, quantity]) => {
+        const product = productMap[barcode];
+        if (product) {
+          if(product.productName !== name){
+            res.status(402);
+            throw new Error(`Mismatched Barcode Name:\n Barcode:${barcode}, newName: ${name}, existingName:${product.productName}`);
+          }
+          // Update the quantity
+          product.quantity += quantity;
+          product.productOffer = productOffer;
+        } else {
+          // If the product is not found, you can add it to the second array
+          store.products.push({ productBarcode: barcode, productName: name, productOffer,quantity });
+        }
+    });
     try {
-        const store = await POSStore.findOne({storeId})
-
-        const productMap = store.products.reduce((map, product) => {
-            map[product.productBarcode] = product;
-            return map;
-        }, {});
-
-        jsonData.slice(1).forEach(([barcode, name, productOffer, quantity]) => {
-            const product = productMap[barcode];
-            if (product) {
-              if(product.productName !== name){
-                flag = 1;
-                mismatchedProduct = {barcode, newName:name, existingName:product.productName};
-                throw new Error("Mismatched Barcode Name");
-              }
-              // Update the quantity
-              product.quantity += quantity;
-              product.productOffer = productOffer;
-            } else {
-              // If the product is not found, you can add it to the second array
-              store.products.push({ productBarcode: barcode, productName: name, productOffer,quantity });
-            }
-        });
         await store.save();
         res.status(200).json(store);
     } catch (error) {
-        console.log(error);
-        if(flag === 1){
-            res.status(400).json(mismatchedProduct);
-            throw new Error("Mismatched Barcode Name");
-        }
         res.status(500);
         throw new Error("Internal Server Error");
     }
