@@ -86,7 +86,7 @@ const updateInventory = asyncHandler( async (req,res) => {
         return map;
     }, {});
 
-    jsonData.slice(1).forEach(([barcode, name, productOffer, quantity]) => {
+    jsonData.slice(1).forEach(([barcode, name, category, quantity, productOffer, costPrice, sellingPrice]) => {
         const product = productMap[barcode];
         if (product) {
           if(product.productName !== name){
@@ -96,20 +96,26 @@ const updateInventory = asyncHandler( async (req,res) => {
           // Update the quantity
           product.quantity += quantity;
           product.productOffer = productOffer;
+          product.costPrice = costPrice;
+          product.sellingPrice = sellingPrice;
         } else {
           // If the product is not found, you can add it to the second array
-          store.products.push({ productBarcode: barcode, productName: name, productOffer,quantity });
+          store.products.push({ productBarcode: barcode, productName: name, productOffer,quantity, costPrice, sellingPrice, category });
         }
     });
     try {
         await store.save();
         res.status(200).json(store);
     } catch (error) {
+        console.log(error);
         res.status(500);
         throw new Error("Internal Server Error");
     }
 })
 
+//@desc Get all store ids
+//@route GET /api/pos/get_store_ids
+//@access Private
 const getPOSStoreIds = asyncHandler( async (req,res) => {
     //Find and get all raw material
     const stores = await POSStore.find({}).select("storeId storeLocation");
@@ -122,6 +128,10 @@ const getPOSStoreIds = asyncHandler( async (req,res) => {
     res.status(200).json(stores)
 });
 
+
+//@desc Get Store Document
+//@route GET /api/pos/get_pos_store/:storeId
+//@access Private
 const getPOSStore = asyncHandler( async (req,res) => {
     const storeId = req.params.storeId.toUpperCase();
     //Find and get all raw material
@@ -133,27 +143,5 @@ const getPOSStore = asyncHandler( async (req,res) => {
     }
     res.status(200).json(store);
 });
-
-// Store.findOne(
-//     { storeId },
-//     {
-//       products: {
-//         $elemMatch: { productId: productIdToFind },
-//       },
-//     },
-//     (err, store) => {
-//       if (err) {
-//         console.error('Error:', err);
-//       } else {
-//         if (!store) {
-//           console.log('Store not found.');
-//         } else {
-//           // 'product' will contain the matching product or null if not found
-//           const product = store.products[0];
-//           console.log('Product:', product);
-//         }
-//       }
-//     }
-//   );
 
 module.exports = {updateInventory, createPOSStore, getPOSStoreIds, getPOSStore}

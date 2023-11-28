@@ -17,6 +17,7 @@ const { salesRouter } = require("./routes/salesRoutes");
 const { packetRouter } = require("./routes/packetRoutes");
 const { manufactureRouter } = require("./routes/manufacturingRoutes");
 const { posRouter } = require("./routes/posRoutes");
+const { rawMaterialInventoryRouter } = require("./routes/rawMaterialInventoryRoutes");
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.use("/api/budget/",budgetRouter);
 app.use("/api/packets/",packetRouter);
 app.use("/api/manufacture/",manufactureRouter);
 app.use("/api/pos/",posRouter);
+app.use("/api/raw_material_inventory/",rawMaterialInventoryRouter);
 
 app.use(errorHandler)
 

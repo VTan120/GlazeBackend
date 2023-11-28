@@ -5,8 +5,11 @@ const productSchema = new mongoose.Schema({
         type: String, 
     },
     productName: String,
+    category: String,
     productOffer:String,
     quantity: Number,
+    costPrice:Number,
+    sellingPrice:Number
   });
   
  // Store schema with an array of products

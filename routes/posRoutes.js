@@ -8,8 +8,8 @@ const upload = multer({ storage: storage })
 
 posRouter.put("/update_inventory", validateTokenBearer, authorizeRoles("super_admin", "admin"), upload.single('file'), updateInventory);
 posRouter.post("/create_store", validateTokenBearer, authorizeRoles("super_admin", "admin"),  createPOSStore);
-posRouter.get("/get_store_ids", validateTokenBearer, adminAuthorize, getPOSStoreIds);
-posRouter.get("/get_pos_store/:storeId", validateTokenBearer, adminAuthorize, getPOSStore);
+posRouter.get("/get_store_ids",  getPOSStoreIds);
+posRouter.get("/get_pos_store/:storeId", getPOSStore);
 
 
 module.exports = { posRouter };

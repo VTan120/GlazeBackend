@@ -17,19 +17,26 @@ const createStore = asyncHandler( async (req,res) => {
     }
     //Checking duplicate materials
     const existingStore = await Store.countDocuments({city});
+    console.log(existingStore);
+    const newId = `${city.slice(0,3).toUpperCase()}${existingStore+1}`
     try{
         const newStore = new Store({
-            storeId : `${city.slice(0,3).toUpperCase()}${existingStore+1}`,
+            storeId : newId,
             city: city.toLowerCase(),
         });
-        newStore.save();
+        console.log(newStore);
+        await newStore.save();
+        console.log("store saved");
         const newRawInventory = new RawMaterialInventory({
-            storeId : newStore.storeId,
+            storeId : newId,
         });
-        newRawInventory.save();
+        console.log(newRawInventory);
+        await newRawInventory.save();
+        console.log("inventory saved");
         res.status(200).json(newStore);
     }
     catch(err) {
+        console.log(err);
         res.status(500);
         throw new Error("Internal Server Error");
     }

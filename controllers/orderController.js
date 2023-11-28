@@ -9,6 +9,7 @@ const Product = require("../models/productModel");
 const Store = require("../models/storeModel");
 const User = require("../models/userModel");
 const CompleteOrder = require("../models/completedOrderModel");
+const { updateInventoryAfterOrder } = require("./rawMaterialInventoryController");
 
 const createOrder  = asyncHandler(async (req,res) => {
     const {products,  storeId, month, year} = req.body;
@@ -252,16 +253,17 @@ const completeOrder = asyncHandler(async (req,res) => {
     });
 
     try {
-        console.log(newCompleteOrder);
         await newCompleteOrder.save();
 
         const status = await Order.deleteOne({_id:id});
 
-        if (status.deletedCount === 1) {
+        const invUpdate = await updateInventoryAfterOrder({storeId:order.storeId,materials:order.materialPrices})
+
+        if (status.deletedCount === 1 && invUpdate) {
             res.status(200).json({ message: 'Order Completed Successfully.' });
         } 
         else {
-            res.status(404).json({ message: 'Item not found.' });
+            res.status(404).json({ message: 'Something Went Wrong' });
         }
     } catch (error) {
         console.log(error);
@@ -571,7 +573,7 @@ const getOrdersInStore = asyncHandler( async (req,res) => {
                     budgetYears[orders[i].consumptionDate.year] = await Budget.findOne({year:orders[i].consumptionDate.year});
                 }
                 const monthlyBudget = budgetYears[orders[i].consumptionDate.year] ? budgetYears[orders[i].consumptionDate.year].months.find(obj => obj.monthName === orders[i].consumptionDate.month) : {monthlyBudget:false};
-                updatedOrders.push({...orders[i].toObject(),monthlyBudget:monthlyBudget.monthlyBudget})
+                updatedOrders.push({...orders[i].toObject(),monthlyBudget:monthlyBudget?.monthlyBudget ?? false})
             }
             else{
                 updatedOrders.push(orders[i]);
