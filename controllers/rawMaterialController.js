@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const RawMaterial = require("../models/rawMaterialModel");
+const Product = require("../models/productModel");
 
 
 //@desc Add new raw material/ingredient to database
@@ -100,11 +101,26 @@ const deleteRawMaterial = asyncHandler( async (req,res) => {
         throw new Error("All Fields Are Mandatory");
     }
 
+    const material = await RawMaterial.findById(_id);
+
+    if(!material){
+        res.status(402);
+        throw new Error("Material Not Found");
+    }
+
+    const productCount = await Product.countDocuments({ 'recipe.name': material.englishName });
+    console.log(productCount);
+
+    if(productCount !== 0){
+        res.status(402);
+        throw new Error("Product Used In Recipe");
+    }
+
 
     //Find and delete the raw material
     try {
         const deleted = await RawMaterial.deleteOne({_id})
-        materials = await RawMaterial.find();
+        const materials = await RawMaterial.find();
         res.status(200).json(materials);
     } catch (err) {
         console.log(err);

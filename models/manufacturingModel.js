@@ -76,17 +76,17 @@ const manufacturingSchema = new mongoose.Schema({
     },
 
     
-    packages:[
+    package:
         {
             packageType:{
-                type:String,
+                type:Number,
             },
 
             packageQuantity:{
                 type:Number,
             }
         }
-    ],
+    ,
 
     status:{
         type:Number,

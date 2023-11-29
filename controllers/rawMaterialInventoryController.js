@@ -9,7 +9,7 @@ const updateInventory = asyncHandler(async(req,res) => {
     const {storeId, materials} = req.body;
 
     if(!storeId || !materials){
-        res.status(400)
+        res.status(402)
         throw new Error("All fields not provided");
     }
 
@@ -93,4 +93,21 @@ const updateInventoryAfterOrder = asyncHandler(async({storeId, materials}) => {
     }
 });
 
-module.exports = {updateInventory, updateInventoryAfterOrder};
+const getRawInventory = asyncHandler(async (req,res) => {
+    const storeId = req.params["storeId"];
+    if(!storeId){
+        res.status(402);
+        throw new Error("All fields not provided");
+    }
+
+    const store = await RawMaterialInventory.findOne({storeId});
+
+    if(!store){
+        res.status(404);
+        throw new Error("Store Not Found");
+    }
+
+    res.status(200).json(store);
+})
+
+module.exports = {updateInventory, updateInventoryAfterOrder, getRawInventory};

@@ -1,3 +1,4 @@
+
 const asyncHandler = require("express-async-handler");
 
 const User = require("../models/userModel");
@@ -13,42 +14,54 @@ const CompletedManufacturing = require("../models/completManufacureOrderModel")
 
 const startManufacturing = asyncHandler(async(req,res)=>{
 
-    const {storeId,product,productionMonth,packages}=req.body;
+    const {storeId,product, manufactureMonth,manufactureYear ,quantity,weight ,weightInput}=req.body;
 
-    if(!storeId ||!product|| !productionMonth ||!packages){
+    if(!storeId ||!product|| !manufactureMonth ||!manufactureYear ||!quantity ||!weight ||!weightInput){
 
         res.status(402);
         throw new Error("All Fields Not Provided");
 
     }
+   
+    console.log("jcnak");
 
     const store = await Store.findOne({storeId});
     if(!store){
         res.status(402)
         throw new Error("Unknown Store");
     }
-
-    const products = await Product.findOne({name:product});
+    console.log("sstore")
+    const products = await Product.findOne({name:product.value});
     if(!products){
         res.status(402)
         throw new Error("Unknown Product");
     }
-
+    console.log("producxt")
     var  manufacture = {
         adminId:req.user["employeeId"],
         storeId,
-        product,
-        productionMonth,
-        packages:[],
+        product:product.value,
+        productionMonth:{ month:manufactureMonth, year:manufactureYear},
+        package:{packageType:weight , packageQuantity:quantity},
+        weight:weightInput,
 
     } 
+    
+   
+
+    console.log(manufacture);
 
     const createManufacturingOrder= new Manufacture(manufacture);
+     
+
 
     try {
+        console.log("Trying to save");
         await createManufacturingOrder.save(); 
+        console.log("completed");
         res.status(200).json({message:"Manufacture Order Created Successfully"});
     } catch (error){
+        console.log(error)
         res.status(500);
         throw new Error("Internal Server Error");
     }
@@ -60,30 +73,37 @@ const startManufacturing = asyncHandler(async(req,res)=>{
 //@acess private
 const editManufacturing = asyncHandler(async(req,res)=>{
 
-    const {product,productionMonth,packages,_id}=req.body;
+    const {_id,storeId,product, manufactureMonth,manufactureYear ,quantity,weight ,weightInput}=req.body;
 
-    if(!product|| !productionMonth ||!packages  || !_id){
+    if(!_id||!storeId ||!product|| !manufactureMonth ||!manufactureYear ||!quantity ||!weight ||!weightInput){
 
         res.status(402);
         throw new Error("All Fields Not Provided");
 
     }
+    console.log("if")
 
     const manufacture= await Manufacture.findOne({_id});
+    console.log(manufacture)
     if(!manufacture){
         res.status(404)
         throw new Error("Manufacture order not found");
     }
+    console.log("if2")
     
-    manufacture.product = product;
-    manufacture.productionMonth=productionMonth;
-    manufacture.packages=packages;
-
-
+    
+    
     try {
+        manufacture.product = product.value;
+        manufacture.productionMonth.month=manufactureMonth;
+        manufacture.productionMonth.year=manufactureYear;
+        manufacture.package.packageType=weight;
+        manufacture.package.packageQuantity=quantity;
+        manufacture.weight=weightInput;
         await manufacture.save(); 
         res.status(200).json({message:"Manufacture Order Edited Successfully"});
     } catch (error){
+        console.log(error)
         res.status(500);
         throw new Error("Internal Server Error");
     }
@@ -139,34 +159,7 @@ const deletmanufacturing =asyncHandler(async(req,res)=>{
 //@acess private
 
 const getCompletedManufactureOrders = asyncHandler( async (req,res) => {
-//     const page = parseInt(req.query.page) || 1;  // Current page
-//     const limit = parseInt(req.query.limit) || 10;
-//     //const storeId = req.query.storeId;
-//     const storeId = req.params["storeId"];
 
-//     if(!storeId){
-//         res.status(402);
-//         throw new Error("Invalid Store");
-//     }
-//     try {
-//         const totalOrders = await CompletedManufacturing.countDocuments();
-//         const totalPages = Math.ceil(totalOrders / limit);
-//         const orders = await CompletedManufacturing.find({storeId})
-//         .sort(date)
-//         .skip((page - 1) * limit)
-//         .limit(limit)
-//         .exec();;
-// //{orderId:1}
-//         res.status(200).json({
-//             orders,
-//             currentPage: page,
-//             totalPages,
-//         })
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500);
-//         throw new Error("Internal Server Error");
-//     }
 
      const storeId = req.params["storeId"];
      

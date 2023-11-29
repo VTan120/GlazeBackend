@@ -259,6 +259,7 @@ const completeOrder = asyncHandler(async (req,res) => {
 
         const invUpdate = await updateInventoryAfterOrder({storeId:order.storeId,materials:order.materialPrices})
 
+
         if (status.deletedCount === 1 && invUpdate) {
             res.status(200).json({ message: 'Order Completed Successfully.' });
         } 
