@@ -7,6 +7,7 @@ const Manufacture = require("../models/manufacturingModel");
 const Store = require("../models/storeModel");
 const Product = require("../models/productModel")
 const CompletedManufacturing = require("../models/completManufacureOrderModel")
+const RawMaterialInventory = require("../models/rawMaterialInventoryModel");
 
 //@desc Insert Product, Month,Quanity,weight,
 //@rout POST api/manufacture/create_manufacturing_order
@@ -199,18 +200,93 @@ const getManufacturingOrder= asyncHandler(async(req,res)=>{
     }
 });
 
+//@desc Get all ManufacturingOrder Product, Month,Quanity,weight,
+//@rout Get api/manufacture/get_manufacturing_order_details/:id
+//@acess private
+const getManufacturingOrderDetails= asyncHandler(async(req,res)=>{
+   
+    const _id = req.params["id"];
+    
+    if(!_id){
+        res.status(402);
+        throw new Error("Invalid id");
+    }
+    
+
+    try {
+        const manufacture = await Manufacture.findById(_id);
+       
+        if(!manufacture){
+            res.status(402);
+            throw new Error("Invalid");
+        }
+        
+        const inventory = await RawMaterialInventory.findOne({storeId:manufacture.storeId});
+        console.log(inventory)
+        if(!inventory){
+            res.status(402);
+            throw new Error("Inventory not found");
+        }
+
+        const product = await Product.findOne({name:manufacture.product});
+        
+        if(!product){
+            res.status(402);
+            throw new Error("Invalid");
+        }
+        //console.log(product);
+        
+        let returnValue=[];
+
+        const invetoryMap = inventory.rawMaterials.reduce((map, material) => {
+            map[material.name] = material.batches.reduce((acc, currentObject) => {
+                return acc + currentObject.weight;
+              }, 0);
+            return map;
+        }, {});
+
+        product.recipe.map((material)=>{
+            returnValue.push({
+                materialName:material.name,
+
+                requiredQuantity:(manufacture.weight*material.percentage/100).toFixed(3),
+                
+                availableQuantity:(invetoryMap[material.name]*1000).toFixed(3)
+
+            })
+        })
+
+
+
+        res.status(200).json(returnValue);
+    } catch (error) {
+        console.log(error);
+        res.status(500);
+        throw new Error("Internal Server Error");
+    }
+
+});
+
 
 //@desc To Accept Manufacture Order
 //@rout PUT api/manufacture/manufacture_accepted
 //@acess private
 const manufactureAccepted =asyncHandler(async(req,res)=>{
 
-    const {_id} = req.body;
+    const {_id,comparision} = req.body;
 
-    if(!_id) {
+    if(!_id || !comparision) {
         res.status(402);
         throw new Error("All Fields Not Provided");
     }
+
+    comparision.map((data)=>{
+        if(parseFloat(data.requiredQuantity)>parseFloat(data.availableQuantity)){
+            
+            res.status(402);
+        throw new Error(`Not Sufficient ${data.materialName}`);
+        }
+    })
 
     const manufactureorder = await Manufacture.findOne({_id});
 
@@ -224,15 +300,81 @@ const manufactureAccepted =asyncHandler(async(req,res)=>{
         throw new Error("Order Not For Aproval");
     }
 
-    manufactureorder.status=1;
+    const inventory = await RawMaterialInventory.findOne({storeId:manufactureorder.storeId});
+    
+    if(!inventory){
+        res.status(402);
+        throw new Error("Inventory not found");
+    }
 
+    const product = await Product.findOne({name:manufactureorder.product});
+    
+    if(!product){
+        res.status(402);
+        throw new Error("Invalid");
+    }
+
+    
+    let materials=[];
+
+    const invetoryMap = inventory.rawMaterials.reduce((map, material) => {
+        map[material.name] = material.batches;
+        
+        return map;
+    }, {});
+
+    
+  
+    const getBatches=(requiredQuantity,materialName)=>{ 
+        const batches=invetoryMap[materialName]
+        let tempArr=[]
+        let i=0;
+
+        while(parseFloat(requiredQuantity)>0.0){
+
+
+          
+            if(parseFloat(requiredQuantity)<parseFloat(batches[i].weight*1000)){
+                
+                invetoryMap[materialName][i].weight-=(requiredQuantity/1000);
+                tempArr.push({batchId:batches[i].batchId,weight:requiredQuantity});
+                break
+            }
+            
+            tempArr.push({batchId:batches[i].batchId,weight:batches[i].weight*1000})
+           
+            requiredQuantity-=(batches[i].weight*1000)
+            invetoryMap[materialName].shift();
+            
+        }
+
+        return tempArr;
+
+    }
+    
+    console.log("STRTING maping")
+
+    product.recipe.map((material)=>{
+        materials.push({
+            materialName:material.name,
+
+            batches:getBatches((manufactureorder.weight*material.percentage/100 ).toFixed(3),material.name),
+
+        })
+    })
+    
+
+    manufactureorder.status=1;
+    manufactureorder.materials=materials;
     manufactureorder.approvedBy = req.user["employeeId"];
     manufactureorder.approvarName = req.user["employeeName"];
     manufactureorder.approvalDate = Date.now();
     try {
+        await  inventory.save();
         await  manufactureorder.save(); 
         res.status(200).json({message:"Order Accepted"});
     } catch (error){
+        console.log(error);
         res.status(500);
         throw new Error("Internal Server Error");
     }
@@ -268,7 +410,8 @@ const maufactureComplete= asyncHandler(async(req,res)=>{
         date: Date.now(),
         productionMonth:manufacture.productionMonth,
         weight:manufacture.weight,
-        packages:manufacture.packages,
+        package:manufacture.package,
+        materials:manufacture.materials,
         status:2
 
    });
@@ -294,5 +437,9 @@ const maufactureComplete= asyncHandler(async(req,res)=>{
 
    
 
-})
-module.exports={startManufacturing,editManufacturing,deletmanufacturing,getManufacturingOrder,manufactureAccepted,maufactureComplete,getCompletedManufactureOrders}
+});
+
+
+
+
+module.exports={startManufacturing,editManufacturing,deletmanufacturing,getManufacturingOrder,manufactureAccepted,maufactureComplete,getCompletedManufactureOrders,getManufacturingOrderDetails}

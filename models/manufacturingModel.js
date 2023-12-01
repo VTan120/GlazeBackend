@@ -1,6 +1,11 @@
 const mongoose = require("mongoose")
 
 
+const batchSchema = new mongoose.Schema({
+    batchId: Number,
+    
+    weight:Number,
+});
 
 const manufacturingSchema = new mongoose.Schema({
 
@@ -87,6 +92,13 @@ const manufacturingSchema = new mongoose.Schema({
             }
         }
     ,
+    
+    materials:[
+        {
+            materialName:String,
+            batches:[batchSchema],
+        }
+    ],
 
     status:{
         type:Number,

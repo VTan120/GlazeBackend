@@ -2,7 +2,7 @@ const express = require("express");
 
 const { validateTokenBearer } = require("../config/validateTokenBearer");
 
-const {startManufacturing,editManufacturing,deletmanufacturing,getManufacturingOrder,manufactureAccepted,maufactureComplete,getCompletedManufactureOrders} = require("../controllers/manufacturingController");
+const {startManufacturing,editManufacturing,deletmanufacturing,getManufacturingOrder,manufactureAccepted,maufactureComplete,getCompletedManufactureOrders, getManufacturingOrderDetails} = require("../controllers/manufacturingController");
 
 const manufactureRouter = express.Router();
 
@@ -13,4 +13,5 @@ manufactureRouter.delete("/delete_manufacturing_order/:body",validateTokenBearer
 manufactureRouter.post("/maufacture_completed",validateTokenBearer,maufactureComplete);
 manufactureRouter.get("/get_completed_manufacture_order/:storeId",validateTokenBearer,getCompletedManufactureOrders)
 manufactureRouter.put("/manufacture_accepted",validateTokenBearer,manufactureAccepted)
+manufactureRouter.get("/get_manufacturing_order_details/:id",validateTokenBearer,getManufacturingOrderDetails);
 module.exports = {manufactureRouter};
