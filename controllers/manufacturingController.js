@@ -331,16 +331,19 @@ const manufactureAccepted =asyncHandler(async(req,res)=>{
         let i=0;
 
         while(parseFloat(requiredQuantity)>0.0){
-
-
-          
-            if(parseFloat(requiredQuantity)<parseFloat(batches[i].weight*1000)){
-                
-                invetoryMap[materialName][i].weight-=(requiredQuantity/1000);
-                tempArr.push({batchId:batches[i].batchId,weight:requiredQuantity});
+            if(!batches[i]){
                 break
             }
-            
+            if(parseFloat(requiredQuantity)<parseFloat(batches[i].weight*1000)){
+                invetoryMap[materialName][i].weight-=(requiredQuantity/1000);
+                tempArr.push({batchId:batches[i].batchId,weight:requiredQuantity});
+                console.log(batches[i]);
+                if(parseFloat(batches[i].weight*1000)< 0.01){
+                    console.log("removing");
+                    invetoryMap[materialName].shift();
+                }
+                break
+            }
             tempArr.push({batchId:batches[i].batchId,weight:batches[i].weight*1000})
            
             requiredQuantity-=(batches[i].weight*1000)
@@ -351,17 +354,23 @@ const manufactureAccepted =asyncHandler(async(req,res)=>{
         return tempArr;
 
     }
+
+    try {
+        product.recipe.map((material)=>{
+            materials.push({
+                materialName:material.name,
     
-    console.log("STRTING maping")
-
-    product.recipe.map((material)=>{
-        materials.push({
-            materialName:material.name,
-
-            batches:getBatches((manufactureorder.weight*material.percentage/100 ).toFixed(3),material.name),
-
+                batches:getBatches((manufactureorder.weight*material.percentage/100 ).toFixed(3),material.name),
+    
+            })
         })
-    })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500);
+        throw new Error("Something Went Wrong");
+    }
+
     
 
     manufactureorder.status=1;
