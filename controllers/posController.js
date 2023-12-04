@@ -86,10 +86,10 @@ const updateInventory = asyncHandler( async (req,res) => {
         return map;
     }, {});
 
-    jsonData.slice(1).forEach(([barcode, name, category, quantity, productOffer, costPrice, sellingPrice]) => {
+    jsonData.slice(1).forEach(([barcode, productId, name, category, quantity, productOffer, costPrice, sellingPrice]) => {
         const product = productMap[barcode];
         if (product) {
-          if(product.productName !== name){
+          if(product.productId !== productId){
             res.status(402);
             throw new Error(`Mismatched Barcode Name:\n Barcode:${barcode}, newName: ${name}, existingName:${product.productName}`);
           }
@@ -100,7 +100,7 @@ const updateInventory = asyncHandler( async (req,res) => {
           product.sellingPrice = sellingPrice;
         } else {
           // If the product is not found, you can add it to the second array
-          store.products.push({ productBarcode: barcode, productName: name, productOffer,quantity, costPrice, sellingPrice, category });
+          store.products.push({ productBarcode: barcode, productId, productName: name, productOffer,quantity, costPrice, sellingPrice, category });
         }
     });
     try {
