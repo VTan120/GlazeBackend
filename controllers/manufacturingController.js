@@ -47,22 +47,13 @@ const startManufacturing = asyncHandler(async(req,res)=>{
         weight:weightInput,
 
     } 
-    
-   
-
-    console.log(manufacture);
 
     const createManufacturingOrder= new Manufacture(manufacture);
-     
-
 
     try {
-        console.log("Trying to save");
         await createManufacturingOrder.save(); 
-        console.log("completed");
         res.status(200).json({message:"Manufacture Order Created Successfully"});
     } catch (error){
-        console.log(error)
         res.status(500);
         throw new Error("Internal Server Error");
     }
